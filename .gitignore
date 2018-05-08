@@ -9,6 +9,12 @@
 *.so
 *.dylib
 
+### Glide ###
+vendor
+
+### Youtube API ###
+client_secret.json
+
 # Test binary, build with `go test -c`
 *.test
 
