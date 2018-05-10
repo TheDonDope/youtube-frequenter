@@ -78,6 +78,34 @@ func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo
 	return outChannel
 }
 
+// asdasdasd
+func GetVideoIDsOverview(service *youtube.Service, inChannel chan ChannelMetaInfo) <-chan ChannelMetaInfo {
+	fmt.Println("Begin GetVideoIDsOverview")
+	outChannel := make(chan ChannelMetaInfo)
+
+	go func() {
+		fmt.Println(fmt.Sprintf("Starting goroutine in GetVideoIDsOverview"))
+		channelMetaInfo := <-inChannel
+		//fmt.Println(fmt.Sprintf("Input channelMetaInfo: %+v", channelMetaInfo))
+		call := service.PlaylistItems.List("contentDetails,snippet")
+		call = call.PlaylistId(channelMetaInfo.Playlists[0].PlaylistID)
+
+		response, responseError := call.Do()
+		HandleError(responseError, "GetChannelOverview Response error!")
+
+		firstItem := response.Items[0]
+		fmt.Println(firstItem)
+		// Fill ChannelID
+		fmt.Println(fmt.Sprintf("Filling complete. Result: %+v", channelMetaInfo))
+		fmt.Println("Sending result to outChannel...")
+		outChannel <- channelMetaInfo
+		fmt.Println("Result successfully sent to outChannel")
+		fmt.Println("Ending goroutine in GetChannelOverview")
+	}()
+	fmt.Println("End GetChannelOverview. Returning outChannel.")
+	return outChannel
+}
+
 // Exfoliator exfoliates
 func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
 	initialInChannel := make(chan ChannelMetaInfo)
