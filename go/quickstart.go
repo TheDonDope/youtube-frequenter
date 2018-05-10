@@ -116,8 +116,8 @@ func channelsListByUsername(service *youtube.Service, part string, forUsername s
 		response.Items[0].Statistics.ViewCount))
 }
 
-func getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service *youtube.Service, part string, idType string, idValue string, playlistName string) {
-	call := service.Channels.List(part)
+func getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service *youtube.Service, idType string, idValue string, playlistName string) {
+	call := service.Channels.List("contentDetails")
 
 	if idValue != "" {
 		if idType == "customUrl" {
@@ -130,15 +130,14 @@ func getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service *youtube.Service
 
 	response, err := call.Do()
 	handleError(err, "")
-
-	item = response.items[0]
-	var playlistId string = ""
+	item := response.Items[0]
+	var playlistID string
 	if playlistName == "uploads" {
-		playlistId = item.contentDetails.relatedPlaylists.uploads
+		playlistID = item.ContentDetails.RelatedPlaylists.Uploads
 	} else if playlistName == "favorites" {
-		playlist = item.contentDetails.relatedPlaylists.favorites
+		playlistID = item.ContentDetails.RelatedPlaylists.Favorites
 	}
-	fmt.Println(item.Id, ": ", playlist)
+	fmt.Println(item.Id, ": ", playlistID)
 }
 
 func main() {
@@ -160,6 +159,6 @@ func main() {
 
 	handleError(err, "Error creating YouTube client")
 
-	channelsListByUsername(service, "snippet,contentDetails,statistics", "GoogleDevelopers")
-	getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service, "contentDetails", "channelId", "UC_x5XG1OV2P6uZZ5FSM9Ttw", "uploads")
+	channelsListByUsername(service, "snippet,contentDetails,statistics", "wwwKenFMde")
+	getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service, "customUrl", "wwwKenFMde", "uploads")
 }
