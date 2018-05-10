@@ -16,10 +16,11 @@ import (
 // - Playlists (With their PlaylistID and PlaylistName)
 // - SubscriberCount
 // - ViewCount
-func GetChannelInfo(service *youtube.Service, channelMetaInfoChannel chan ChannelMetaInfo) {
+func GetChannelInfo(service *youtube.Service, inChannel chan ChannelMetaInfo) chan ChannelMetaInfo {
 
 	fmt.Println("GetChannelInfo Call")
-	channelMetaInfo := <-channelMetaInfoChannel
+	outChannel := make(chan ChannelMetaInfo)
+	channelMetaInfo := <-inChannel
 	fmt.Println(fmt.Sprintf("GetChannelInfo gets: %v", channelMetaInfo))
 	call := service.Channels.List("contentDetails,snippet,statistics")
 	call = call.ForUsername(channelMetaInfo.CustomURL)
@@ -32,6 +33,7 @@ func GetChannelInfo(service *youtube.Service, channelMetaInfoChannel chan Channe
 	// Fill ChannelID
 	if channelMetaInfo.ChannelID == "" {
 		channelMetaInfo.ChannelID = firstItem.Id
+		fmt.Println(channelMetaInfo.ChannelID)
 	}
 
 	// Fill CustomURL
@@ -59,20 +61,23 @@ func GetChannelInfo(service *youtube.Service, channelMetaInfoChannel chan Channe
 	if channelMetaInfo.ViewCount == 0 {
 		channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
 	}
-	channelMetaInfoChannel <- channelMetaInfo
+	fmt.Println(channelMetaInfo)
+	outChannel <- channelMetaInfo
+	fmt.Println("would return now.")
+	return outChannel
 }
 
 // Exfoliator exfoliates
 func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
-	channelMetaInfoChannel := make(chan ChannelMetaInfo)
+	initialInChannel := make(chan ChannelMetaInfo)
 
 	go func() {
-		channelMetaInfoChannel <- channelMetaInfo
+		initialInChannel <- channelMetaInfo
 	}()
-	go GetChannelInfo(service, channelMetaInfoChannel)
+
 	timeout := time.After(5 * time.Second)
 	select {
-	case channelMetaInfoFromChannel := <-channelMetaInfoChannel:
+	case channelMetaInfoFromChannel := <-GetChannelInfo(service, initialInChannel):
 		fmt.Println(fmt.Sprintf("Exfoliator gets: %v", channelMetaInfoFromChannel))
 		channelMetaInfo = channelMetaInfoFromChannel
 	case <-timeout:
