@@ -32,11 +32,10 @@ func main() {
 
 	service.HandleError(serviceError, "Error creating YouTube client")
 
-	query := service.Query{}
-	query.CustomURL = opts.CustomURL
-	query.PlaylistName = opts.PlaylistName
+	channelMetaInfo := service.ChannelMetaInfo{}
+	channelMetaInfo.CustomURL = opts.CustomURL
 
-	results := service.Exfoliator(youtubeService, query)
+	results := service.Exfoliator(youtubeService, channelMetaInfo)
 	fmt.Println(results)
 	elapsed := time.Since(start)
 	fmt.Println(elapsed)
