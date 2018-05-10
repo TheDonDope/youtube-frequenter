@@ -32,43 +32,48 @@ func GetPlaylistIDByChannelMetaInfo(service *youtube.Service, channelMetaInfo Ch
 
 // MetaSearch searches meta
 func MetaSearch(searchName string) Search {
-	return func(service *youtube.Service, query Query) Result {
-		fmt.Println(fmt.Sprintf("%v starts running with query: %v", searchName, query))
-		queryMethod := query.QueryMethod
+	return func(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
+		fmt.Println(fmt.Sprintf("%v starts running with query: %v", searchName, channelMetaInfo))
 
-		result := GetPlaylistIDByQueryParameters(service, query)
+		// priority 1: ....
+		if channelMetaInfo.ChannelID == "" {
+			channelMetaInfo = GetPlaylistIDByChannelMetaInfo(service, channelMetaInfo)
+		}
 
-		return result
+		return channelMetaInfo
 	}
 }
 
 // FirstResponder returns the first replica search result, whichever was the faster
-func FirstResponder(service *youtube.Service, query Query, replicas ...Search) Result {
-	resultChannel := make(chan Result)
-	searchReplica := func(index int) { resultChannel <- replicas[index](service, query) }
+func FirstResponder(service *youtube.Service, channelMetaInfo ChannelMetaInfo, replicas ...Search) ChannelMetaInfo {
+	channelMetaInfoChannel := make(chan ChannelMetaInfo)
+	searchReplica := func(index int) { channelMetaInfoChannel <- replicas[index](service, channelMetaInfo) }
 	for replicaIndex := range replicas {
 		go searchReplica(replicaIndex)
 	}
-	return <-resultChannel
+	return <-channelMetaInfoChannel
 }
 
 // Exfoliator exfoliates
-func Exfoliator(service *youtube.Service, query Query) (resultsFromChannel []Result) {
-	resultChannel := make(chan Result)
+func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
+	channelMetaInfoChannel := make(chan ChannelMetaInfo)
 
 	go func() {
-		resultChannel <- FirstResponder(service, query, MetaSearch("PlaylistID1"), MetaSearch("PlaylistID2"))
+		channelMetaInfoChannel <- FirstResponder(service, channelMetaInfo, MetaSearch("PlaylistID1"), MetaSearch("PlaylistID2"))
+	}()
+	go func() {
+		channelMetaInfoChannel <- FirstResponder(service, channelMetaInfo, MetaSearch("PlaylistID1"), MetaSearch("PlaylistID2"))
 	}()
 
 	timeout := time.After(10 * time.Second)
-	for i := 0; i < 1; i++ {
+	for i := 0; i < 2; i++ {
 		select {
-		case resultFromChannel := <-resultChannel:
-			resultsFromChannel = append(resultsFromChannel, resultFromChannel)
+		case channelMetaInfoFromChannel := <-channelMetaInfoChannel:
+			channelMetaInfo = channelMetaInfoFromChannel
 		case <-timeout:
 			fmt.Println("timed out")
-			return
+			return channelMetaInfo
 		}
 	}
-	return resultsFromChannel
+	return channelMetaInfo
 }
