@@ -41,5 +41,5 @@ func main() {
 	results := service.Exfoliator(youtubeService, channelMetaInfo)
 	fmt.Println(fmt.Sprintf("Exfoliator exfoliated successfully. Results: %+v", results))
 	elapsed := time.Since(start)
-	fmt.Println(fmt.Sprintf("Finishing youtube-tinfoil-expose @ %v. Overall time spent: %v ms."), time.Now(), elapsed)
+	fmt.Println(fmt.Sprintf("Finishing youtube-tinfoil-expose @ %v. Overall time spent: %v ms.", time.Now(), elapsed))
 }
