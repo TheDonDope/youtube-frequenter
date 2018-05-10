@@ -3,37 +3,10 @@ package service
 import (
 	"errors"
 	"fmt"
-	"log"
 	"time"
 
 	"google.golang.org/api/youtube/v3"
 )
-
-// Result datatype
-type Result struct {
-	ResultValue string
-	ResultError error
-}
-
-// Query datatype
-type Query struct {
-	ChannelID    string
-	CustomURL    string
-	PlaylistName string
-}
-
-// Search function declaration
-type Search func(serviceservice *youtube.Service, query Query) Result
-
-// HandleError handles errors
-func HandleError(errorToHandle error, errorMessage string) {
-	if errorMessage == "" {
-		errorMessage = "Error making API call"
-	}
-	if errorToHandle != nil {
-		log.Fatalf(errorMessage+": %v", errorToHandle.Error())
-	}
-}
 
 // GetPlaylistIDByQueryParameters returns the id of the playlist for the given
 // search query. You can either query by channelID or customURL.
@@ -66,6 +39,8 @@ func GetPlaylistIDByQueryParameters(service *youtube.Service, query Query) Resul
 func MetaSearch(searchName string) Search {
 	return func(service *youtube.Service, query Query) Result {
 		fmt.Println(fmt.Sprintf("%v starts running with query: %v", searchName, query))
+		queryMethod := query.QueryMethod
+
 		result := GetPlaylistIDByQueryParameters(service, query)
 
 		return result
