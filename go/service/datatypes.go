@@ -24,9 +24,12 @@ type Playlist struct {
 
 // ChannelMetaInfo of a YouTube channel
 type ChannelMetaInfo struct {
-	ChannelID string
-	CustomURL string
-	Playlists []Playlist
+	ChannelID       string
+	ChannelName     string
+	CustomURL       string
+	SubscriberCount uint64
+	ViewCount       uint64
+	Playlists       []Playlist
 }
 
 // Search calls the YouTube API

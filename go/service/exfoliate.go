@@ -7,37 +7,55 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
-// GetPlaylistIDByChannelMetaInfo returns the id of the playlist for the given
-// search query. You can either query by channelID or customURL.
-func GetPlaylistIDByChannelMetaInfo(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
-	call := service.Channels.List("contentDetails")
-
-	if channelMetaInfo.ChannelID != "" {
-		call = call.Id(channelMetaInfo.ChannelID)
-	} else if channelMetaInfo.CustomURL != "" {
-		call = call.ForUsername(channelMetaInfo.CustomURL)
-	}
-
-	response, responseError := call.Do()
-	HandleError(responseError, "Response error!")
-
-	firstItem := response.Items[0]
-	if channelMetaInfo.Playlists == nil {
-		channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, "uploads", nil})
-		channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, "favorites", nil})
-	}
-
-	return channelMetaInfo
-}
-
-// MetaSearch searches meta
-func MetaSearch(searchName string) Search {
+// GetChannelInfo implements a Search which fills the most basic info about a channel.
+// To use the method simply pass a ChannelMetaInfo with either the ChannelID or CustomURL set.
+// On search completion the following attributes will be filled, if not already set:
+// - ChannelID
+// - CustomURL
+// - ChannelName
+// - Playlists (With their PlaylistID and PlaylistName)
+// - SubscriberCount
+// - ViewCount
+func GetChannelInfo() Search {
 	return func(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
-		fmt.Println(fmt.Sprintf("%v starts running with query: %v", searchName, channelMetaInfo))
+		fmt.Println(fmt.Sprintf("Channel Info search starts running with meta info: %v", channelMetaInfo))
+		call := service.Channels.List("contentDetails,snippet,statistics")
+		call = call.ForUsername(channelMetaInfo.CustomURL)
 
-		// priority 1: ....
+		response, responseError := call.Do()
+		HandleError(responseError, "GetChannelInfo Response error!")
+
+		firstItem := response.Items[0]
+
+		// Fill ChannelID
 		if channelMetaInfo.ChannelID == "" {
-			channelMetaInfo = GetPlaylistIDByChannelMetaInfo(service, channelMetaInfo)
+			channelMetaInfo.ChannelID = firstItem.Id
+		}
+
+		// Fill CustomURL
+		if channelMetaInfo.CustomURL == "" {
+			channelMetaInfo.CustomURL = firstItem.Snippet.CustomUrl
+		}
+
+		// Fill ChannelName
+		if channelMetaInfo.ChannelName == "" {
+			channelMetaInfo.ChannelName = firstItem.Snippet.Title
+		}
+
+		// Fill Playlists
+		if channelMetaInfo.Playlists == nil {
+			channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, "uploads", nil})
+			channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, "favorites", nil})
+		}
+
+		// Fill SubscriberCount
+		if channelMetaInfo.SubscriberCount == 0 {
+			channelMetaInfo.SubscriberCount = firstItem.Statistics.SubscriberCount
+		}
+
+		// Fill ViewCount
+		if channelMetaInfo.ViewCount == 0 {
+			channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
 		}
 
 		return channelMetaInfo
@@ -59,13 +77,10 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	channelMetaInfoChannel := make(chan ChannelMetaInfo)
 
 	go func() {
-		channelMetaInfoChannel <- FirstResponder(service, channelMetaInfo, MetaSearch("PlaylistID1"), MetaSearch("PlaylistID2"))
-	}()
-	go func() {
-		channelMetaInfoChannel <- FirstResponder(service, channelMetaInfo, MetaSearch("PlaylistID1"), MetaSearch("PlaylistID2"))
+		channelMetaInfoChannel <- FirstResponder(service, channelMetaInfo, GetChannelInfo(), GetChannelInfo())
 	}()
 
-	timeout := time.After(10 * time.Second)
+	timeout := time.After(3 * time.Second)
 	for i := 0; i < 2; i++ {
 		select {
 		case channelMetaInfoFromChannel := <-channelMetaInfoChannel:
