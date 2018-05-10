@@ -1,38 +1,33 @@
 package service
 
 import (
-	"errors"
 	"fmt"
 	"time"
 
 	"google.golang.org/api/youtube/v3"
 )
 
-// GetPlaylistIDByQueryParameters returns the id of the playlist for the given
+// GetPlaylistIDByChannelMetaInfo returns the id of the playlist for the given
 // search query. You can either query by channelID or customURL.
-func GetPlaylistIDByQueryParameters(service *youtube.Service, query Query) Result {
+func GetPlaylistIDByChannelMetaInfo(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
 	call := service.Channels.List("contentDetails")
 
-	if query.ChannelID != "" {
-		call = call.Id(query.ChannelID)
-	} else if query.CustomURL != "" {
-		call = call.ForUsername(query.CustomURL)
+	if channelMetaInfo.ChannelID != "" {
+		call = call.Id(channelMetaInfo.ChannelID)
+	} else if channelMetaInfo.CustomURL != "" {
+		call = call.ForUsername(channelMetaInfo.CustomURL)
 	}
 
 	response, responseError := call.Do()
 	HandleError(responseError, "Response error!")
 
-	result := Result{}
 	firstItem := response.Items[0]
-	if query.PlaylistName == "uploads" {
-		result.ResultValue = firstItem.ContentDetails.RelatedPlaylists.Uploads
-		return result
-	} else if query.PlaylistName == "favorites" {
-		result.ResultValue = firstItem.ContentDetails.RelatedPlaylists.Favorites
-		return result
+	if channelMetaInfo.Playlists == nil {
+		channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, "uploads", nil})
+		channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, "favorites", nil})
 	}
-	result.ResultError = errors.New("Unknown playlist. Available playlists are: uploads, favorites")
-	return result
+
+	return channelMetaInfo
 }
 
 // MetaSearch searches meta
