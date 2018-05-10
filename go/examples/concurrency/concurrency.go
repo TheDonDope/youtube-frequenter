@@ -21,12 +21,18 @@ var (
 	Video2 = fakeSearch("video2")
 )
 
+// Result datatype
+type Result struct {
+	resultValue string
+}
+
+// Search function declaration
 type Search func(query string) Result
 
 func fakeSearch(kind string) Search {
 	return func(query string) Result {
 		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
-		return Result(fmt.Sprintf("%s result for %q\n", kind, query))
+		return Result{fmt.Sprintf("%s result for %q\n", kind, query)}
 	}
 }
 
