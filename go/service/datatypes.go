@@ -18,7 +18,6 @@ type Video struct {
 // Playlist information of a YouTube playlist
 type Playlist struct {
 	PlaylistID    string
-	PlaylistName  string
 	PlaylistItems []Video
 }
 
@@ -29,7 +28,7 @@ type ChannelMetaInfo struct {
 	CustomURL       string
 	SubscriberCount uint64
 	ViewCount       uint64
-	Playlists       []Playlist
+	Playlists       map[string]Playlist
 }
 
 // Search calls the YouTube API

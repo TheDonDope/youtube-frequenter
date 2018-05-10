@@ -24,8 +24,7 @@ func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo
 		fmt.Println(fmt.Sprintf("Starting goroutine in GetChannelOverview"))
 		channelMetaInfo := <-inChannel
 		fmt.Println(fmt.Sprintf("Input channelMetaInfo: %+v", channelMetaInfo))
-		call := service.Channels.List("contentDetails,snippet,statistics")
-		call = call.ForUsername(channelMetaInfo.CustomURL)
+		call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
 
 		response, responseError := call.Do()
 		HandleError(responseError, "GetChannelOverview Response error!")
@@ -52,8 +51,9 @@ func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo
 
 		// Fill Playlists
 		if channelMetaInfo.Playlists == nil {
-			channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, "uploads", nil})
-			channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, "favorites", nil})
+			channelMetaInfo.Playlists = make(map[string]Playlist)
+			channelMetaInfo.Playlists["uploads"] = Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, []Video{}}
+			channelMetaInfo.Playlists["favorites"] = Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, []Video{}}
 			fmt.Println(fmt.Sprintf("channelMetaInfo.Playlists: %+v", channelMetaInfo.Playlists))
 		}
 
@@ -78,8 +78,8 @@ func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo
 	return outChannel
 }
 
-// asdasdasd
-func GetVideoIDsOverview(service *youtube.Service, inChannel chan ChannelMetaInfo) <-chan ChannelMetaInfo {
+// GetVideoIDsOverview bla
+func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaInfo) <-chan ChannelMetaInfo {
 	fmt.Println("Begin GetVideoIDsOverview")
 	outChannel := make(chan ChannelMetaInfo)
 
@@ -87,15 +87,17 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel chan ChannelMetaInf
 		fmt.Println(fmt.Sprintf("Starting goroutine in GetVideoIDsOverview"))
 		channelMetaInfo := <-inChannel
 		//fmt.Println(fmt.Sprintf("Input channelMetaInfo: %+v", channelMetaInfo))
-		call := service.PlaylistItems.List("contentDetails,snippet")
-		call = call.PlaylistId(channelMetaInfo.Playlists[0].PlaylistID)
+		call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
 
 		response, responseError := call.Do()
 		HandleError(responseError, "GetChannelOverview Response error!")
 
-		firstItem := response.Items[0]
-		fmt.Println(firstItem)
-		// Fill ChannelID
+		for _, item := range response.Items {
+			video := Video{VideoID: item.Id}
+			uploadPlaylist := channelMetaInfo.Playlists["uploads"]
+			uploadPlaylist.PlaylistItems = append(uploadPlaylist.PlaylistItems, video)
+			fmt.Println(fmt.Sprintf("Appended video %s to playlist uploads", video))
+		}
 		fmt.Println(fmt.Sprintf("Filling complete. Result: %+v", channelMetaInfo))
 		fmt.Println("Sending result to outChannel...")
 		outChannel <- channelMetaInfo
@@ -114,11 +116,12 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 		initialInChannel <- channelMetaInfo
 	}()
 	getChannelOverviewOutChannel := GetChannelOverview(service, initialInChannel)
+	getVideoIDsOverviewOutChannel := GetVideoIDsOverview(service, getChannelOverviewOutChannel)
 	timeout := time.After(5 * time.Second)
 	// time.Sleep(time.Second)
 	select {
-	case channelMetaInfo = <-getChannelOverviewOutChannel:
-		fmt.Println(fmt.Sprintf("Got %+v from getChannelOverviewOutChannel", channelMetaInfo))
+	case channelMetaInfo = <-getVideoIDsOverviewOutChannel:
+		fmt.Println(fmt.Sprintf("Got %+v from getVideoIDsOverviewOutChannel", channelMetaInfo))
 	case <-timeout:
 		fmt.Println("Request timed out...")
 		return channelMetaInfo
