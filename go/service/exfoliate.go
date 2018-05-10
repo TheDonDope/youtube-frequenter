@@ -107,6 +107,36 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 	fmt.Println("End GetChannelOverview. Returning outChannel.")
 	return outChannel
 }
+func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaInfo) <-chan ChannelMetaInfo {
+	fmt.Println("Begin GetCommentsOverview")
+	outChannel := make(chan ChannelMetaInfo)
+	channelMetaInfo := <-inChannel
+	for _, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
+		go func(videoInput *Video) {
+			fmt.Println(fmt.Sprintf("Starting goroutine in GetCommentsOverview"))
+
+			//fmt.Println(fmt.Sprintf("Input channelMetaInfo: %+v", channelMetaInfo))
+			call := service.CommentThreads.List("snippet").VideoId(videoInput.VideoID)
+
+			response, responseError := call.Do()
+			HandleError(responseError, "GetChannelOverview Response error!")
+
+			for _, item := range response.Items {
+				videoInput.Comments = append(videoInput.Comments, Comment{CommentID: item.Snippet.TopLevelComment.Id, AuthorChannelID: item.Snippet.TopLevelComment.Snippet.AuthorChannelId.value})
+				uploadPlaylist := channelMetaInfo.Playlists["uploads"]
+				uploadPlaylist.PlaylistItems = append(uploadPlaylist.PlaylistItems, video)
+				fmt.Println(fmt.Sprintf("Appended video %s to playlist uploads", video))
+			}
+			fmt.Println(fmt.Sprintf("Filling complete. Result: %+v", channelMetaInfo))
+			fmt.Println("Sending result to outChannel...")
+			outChannel <- channelMetaInfo
+			fmt.Println("Result successfully sent to outChannel")
+			fmt.Println("Ending goroutine in GetChannelOverview")
+		}(&video)
+	}
+	fmt.Println("End GetChannelOverview. Returning outChannel.")
+	return outChannel
+}
 
 // Exfoliator exfoliates
 func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
