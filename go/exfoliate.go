@@ -6,11 +6,13 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"os/user"
 	"path/filepath"
+	"time"
 
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
@@ -18,9 +20,31 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+var (
+	// Web1 Replicae
+	PlaylistID1 = MetaSearch("PlaylistID1")
+	// Web2 Replicae
+	PlaylistID2 = MetaSearch("PlaylistID2")
+)
+
 const missingClientSecretsMessage = `
 Please configure OAuth 2.0
 `
+
+// Result datatype
+type Result struct {
+	ResultValue string
+	ResultError error
+}
+
+type Query struct {
+	ChannelID    string
+	CustomURL    string
+	PlaylistName string
+}
+
+// Search function declaration
+type Search func(serviceservice *youtube.Service, query Query) Result
 
 // getHTTPClient uses a Context and Config to retrieve a Token
 // then generate a Client. It returns the generated Client.
@@ -101,45 +125,67 @@ func handleError(errorToHandle error, errorMessage string) {
 	}
 }
 
-func getPlaylistIDByChannelIDPlaylistName(service *youtube.Service, channelID string, playlistName string) (string, error) {
+func getPlaylistIDByChannelIDOrNameAndPlaylistName(service *youtube.Service, query Query) Result {
 	call := service.Channels.List("contentDetails")
 
-	if channelID != "" {
-		call = call.Id(channelID)
+	if query.ChannelID != "" {
+		call = call.Id(query.ChannelID)
+	} else if query.CustomURL != "" {
+		call = call.ForUsername(query.CustomURL)
 	}
 
 	response, responseError := call.Do()
 	handleError(responseError, "Response error!")
 	firstItem := response.Items[0]
-	if playlistName == "uploads" {
-		return firstItem.ContentDetails.RelatedPlaylists.Uploads, nil
-	} else if playlistName == "favorites" {
-		return firstItem.ContentDetails.RelatedPlaylists.Favorites, nil
+	if query.PlaylistName == "uploads" {
+		return Result{firstItem.ContentDetails.RelatedPlaylists.Uploads, nil}
+	} else if query.PlaylistName == "favorites" {
+		return Result{firstItem.ContentDetails.RelatedPlaylists.Favorites, nil}
 	}
 
-	return "", errors.New("Unknown playlist. Available playlists are: uploads, favorites")
+	return Result{"", errors.New("Unknown playlist. Available playlists are: uploads, favorites")}
 }
 
-func getPlaylistIDByCustomURLPlaylistName(service *youtube.Service, customURL string, playlistName string) (string, error) {
-	call := service.Channels.List("contentDetails")
-
-	if customURL != "" {
-		call = call.ForUsername(customURL)
+func MetaSearch(searchName string) Search {
+	return func(service *youtube.Service, query Query) Result {
+		getPlaylistIDByChannelIDOrNameAndPlaylistName(service, query)
+		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+		return Result{fmt.Sprintf("%s result for %q\n", searchName, query.ChannelID), nil}
 	}
+}
 
-	response, responseError := call.Do()
-	handleError(responseError, "Response error!")
-	firstItem := response.Items[0]
-	if playlistName == "uploads" {
-		return firstItem.ContentDetails.RelatedPlaylists.Uploads, nil
-	} else if playlistName == "favorites" {
-		return firstItem.ContentDetails.RelatedPlaylists.Favorites, nil
+func FirstResponder(service *youtube.Service, query Query, replicas ...Search) Result {
+	resultChannel := make(chan Result)
+	searchReplica := func(index int) { resultChannel <- replicas[index](service, query) }
+	for replicaIndex := range replicas {
+		go searchReplica(replicaIndex)
 	}
+	return <-resultChannel
+}
 
-	return "", errors.New("Unknown playlist. Available playlists are: uploads, favorites")
+func Exfoliater(service *youtube.Service, query Query) (resultsFromChannel []Result) {
+	resultChannel := make(chan Result)
+
+	go func() { resultChannel <- FirstResponder(service, query, PlaylistID1, PlaylistID2) }()
+	/*
+		go func() { resultChannel <- FirstResponder(query, Image1, Image2) }()
+		go func() { resultChannel <- FirstResponder(query, Video1, Video2) }()
+	*/
+	timeout := time.After(10 * time.Second)
+	for i := 0; i < 3; i++ {
+		select {
+		case resultFromChannel := <-resultChannel:
+			resultsFromChannel = append(resultsFromChannel, resultFromChannel)
+		case <-timeout:
+			fmt.Println("timed out")
+			return
+		}
+	}
+	return
 }
 
 func main() {
+	start := time.Now()
 	fmt.Println("Welcome to youtube-tinfoil-expose")
 
 	backgroundContext := context.Background()
@@ -157,9 +203,18 @@ func main() {
 	youtubeService, serviceError := youtube.New(httpClient)
 
 	handleError(serviceError, "Error creating YouTube client")
+	/*
+		getPlaylistIDByChannelIDPlaylistName(youtubeService, "UCu9ljRg6YrwSw64qggVdczQ", "uploads")
+		getPlaylistIDByChannelIDPlaylistName(youtubeService, "UCu9ljRg6YrwSw64qggVdczQ", "favorites")
+		getPlaylistIDByCustomURLPlaylistName(youtubeService, "wwwKenFMde", "uploads")
+		getPlaylistIDByCustomURLPlaylistName(youtubeService, "wwwKenFMde", "favorites")
+	*/
+	query := Query{}
+	query.CustomURL = "wwwKenFMde"
+	query.PlaylistName = "uploads"
 
-	getPlaylistIDByChannelIDPlaylistName(youtubeService, "UCu9ljRg6YrwSw64qggVdczQ", "uploads")
-	getPlaylistIDByChannelIDPlaylistName(youtubeService, "UCu9ljRg6YrwSw64qggVdczQ", "favorites")
-	getPlaylistIDByCustomURLPlaylistName(youtubeService, "wwwKenFMde", "uploads")
-	getPlaylistIDByCustomURLPlaylistName(youtubeService, "wwwKenFMde", "favorites")
+	results := Exfoliater(youtubeService, query)
+	fmt.Println(results)
+	elapsed := time.Since(start)
+	fmt.Println(elapsed)
 }
