@@ -116,6 +116,31 @@ func channelsListByUsername(service *youtube.Service, part string, forUsername s
 		response.Items[0].Statistics.ViewCount))
 }
 
+func getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service *youtube.Service, part string, idType string, idValue string, playlistName string) {
+	call := service.Channels.List(part)
+
+	if idValue != "" {
+		if idType == "customUrl" {
+			call = call.ForUsername(idValue)
+		} else if idType == "channelId" {
+			call = call.Id(idValue)
+			fmt.Println("bla")
+		}
+	}
+
+	response, err := call.Do()
+	handleError(err, "")
+
+	item = response.items[0]
+	var playlistId string = ""
+	if playlistName == "uploads" {
+		playlistId = item.contentDetails.relatedPlaylists.uploads
+	} else if playlistName == "favorites" {
+		playlist = item.contentDetails.relatedPlaylists.favorites
+	}
+	fmt.Println(item.Id, ": ", playlist)
+}
+
 func main() {
 	ctx := context.Background()
 
@@ -136,4 +161,5 @@ func main() {
 	handleError(err, "Error creating YouTube client")
 
 	channelsListByUsername(service, "snippet,contentDetails,statistics", "GoogleDevelopers")
+	getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service, "contentDetails", "channelId", "UC_x5XG1OV2P6uZZ5FSM9Ttw", "uploads")
 }
