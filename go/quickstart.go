@@ -4,6 +4,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -116,28 +117,42 @@ func channelsListByUsername(service *youtube.Service, part string, forUsername s
 		response.Items[0].Statistics.ViewCount))
 }
 
-func getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service *youtube.Service, idType string, idValue string, playlistName string) {
+func getPlaylistIDByChannelIDPlaylistName(service *youtube.Service, channelID string, playlistName string) (string, error) {
 	call := service.Channels.List("contentDetails")
 
-	if idValue != "" {
-		if idType == "customUrl" {
-			call = call.ForUsername(idValue)
-		} else if idType == "channelId" {
-			call = call.Id(idValue)
-			fmt.Println("bla")
-		}
+	if channelID != "" {
+		call = call.Id(channelID)
 	}
 
-	response, err := call.Do()
-	handleError(err, "")
-	item := response.Items[0]
-	var playlistID string
+	response, responseError := call.Do()
+	handleError(responseError, "Response error!")
+	firstItem := response.Items[0]
 	if playlistName == "uploads" {
-		playlistID = item.ContentDetails.RelatedPlaylists.Uploads
+		return firstItem.ContentDetails.RelatedPlaylists.Uploads, nil
 	} else if playlistName == "favorites" {
-		playlistID = item.ContentDetails.RelatedPlaylists.Favorites
+		return firstItem.ContentDetails.RelatedPlaylists.Favorites, nil
 	}
-	fmt.Println(item.Id, ": ", playlistID)
+
+	return "", errors.New("Unknown playlist. Available playlists are: uploads, favorites")
+}
+
+func getPlaylistIDByCustomURLPlaylistName(service *youtube.Service, customURL string, playlistName string) (string, error) {
+	call := service.Channels.List("contentDetails")
+
+	if customURL != "" {
+		call = call.ForUsername(customURL)
+	}
+
+	response, responseError := call.Do()
+	handleError(responseError, "Response error!")
+	firstItem := response.Items[0]
+	if playlistName == "uploads" {
+		return firstItem.ContentDetails.RelatedPlaylists.Uploads, nil
+	} else if playlistName == "favorites" {
+		return firstItem.ContentDetails.RelatedPlaylists.Favorites, nil
+	}
+
+	return "", errors.New("Unknown playlist. Available playlists are: uploads, favorites")
 }
 
 func main() {
@@ -160,5 +175,8 @@ func main() {
 	handleError(err, "Error creating YouTube client")
 
 	channelsListByUsername(service, "snippet,contentDetails,statistics", "wwwKenFMde")
-	getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName(service, "customUrl", "wwwKenFMde", "uploads")
+	getPlaylistIDByChannelIDPlaylistName(service, "UCu9ljRg6YrwSw64qggVdczQ", "uploads")
+	getPlaylistIDByChannelIDPlaylistName(service, "UCu9ljRg6YrwSw64qggVdczQ", "favorites")
+	getPlaylistIDByCustomURLPlaylistName(service, "wwwKenFMde", "uploads")
+	getPlaylistIDByCustomURLPlaylistName(service, "wwwKenFMde", "favorites")
 }
