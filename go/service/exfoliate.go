@@ -4,17 +4,9 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math/rand"
 	"time"
 
-	youtube "google.golang.org/api/youtube/v3"
-)
-
-var (
-	// Web1 Replicae
-	PlaylistID1 = MetaSearch("PlaylistID1")
-	// Web2 Replicae
-	PlaylistID2 = MetaSearch("PlaylistID2")
+	"google.golang.org/api/youtube/v3"
 )
 
 // Result datatype
@@ -33,6 +25,7 @@ type Query struct {
 // Search function declaration
 type Search func(serviceservice *youtube.Service, query Query) Result
 
+// HandleError handles errors
 func HandleError(errorToHandle error, errorMessage string) {
 	if errorMessage == "" {
 		errorMessage = "Error making API call"
@@ -42,7 +35,9 @@ func HandleError(errorToHandle error, errorMessage string) {
 	}
 }
 
-func getPlaylistIDByChannelIDOrNameAndPlaylistName(service *youtube.Service, query Query) Result {
+// GetPlaylistIDByQueryParameters returns the id of the playlist for the given
+// search query. You can either query by channelID or customURL.
+func GetPlaylistIDByQueryParameters(service *youtube.Service, query Query) Result {
 	call := service.Channels.List("contentDetails")
 
 	if query.ChannelID != "" {
@@ -53,24 +48,31 @@ func getPlaylistIDByChannelIDOrNameAndPlaylistName(service *youtube.Service, que
 
 	response, responseError := call.Do()
 	HandleError(responseError, "Response error!")
+
+	result := Result{}
 	firstItem := response.Items[0]
 	if query.PlaylistName == "uploads" {
-		return Result{firstItem.ContentDetails.RelatedPlaylists.Uploads, nil}
+		result.ResultValue = firstItem.ContentDetails.RelatedPlaylists.Uploads
+		return result
 	} else if query.PlaylistName == "favorites" {
-		return Result{firstItem.ContentDetails.RelatedPlaylists.Favorites, nil}
+		result.ResultValue = firstItem.ContentDetails.RelatedPlaylists.Favorites
+		return result
 	}
-
-	return Result{"", errors.New("Unknown playlist. Available playlists are: uploads, favorites")}
+	result.ResultError = errors.New("Unknown playlist. Available playlists are: uploads, favorites")
+	return result
 }
 
+// MetaSearch searches meta
 func MetaSearch(searchName string) Search {
 	return func(service *youtube.Service, query Query) Result {
-		getPlaylistIDByChannelIDOrNameAndPlaylistName(service, query)
-		time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
-		return Result{fmt.Sprintf("%s result for %q\n", searchName, query.ChannelID), nil}
+		fmt.Println(fmt.Sprintf("%v starts running with query: %v", searchName, query))
+		result := GetPlaylistIDByQueryParameters(service, query)
+
+		return result
 	}
 }
 
+// FirstResponder returns the first replica search result, whichever was the faster
 func FirstResponder(service *youtube.Service, query Query, replicas ...Search) Result {
 	resultChannel := make(chan Result)
 	searchReplica := func(index int) { resultChannel <- replicas[index](service, query) }
@@ -80,16 +82,16 @@ func FirstResponder(service *youtube.Service, query Query, replicas ...Search) R
 	return <-resultChannel
 }
 
+// Exfoliator exfoliates
 func Exfoliator(service *youtube.Service, query Query) (resultsFromChannel []Result) {
 	resultChannel := make(chan Result)
 
-	go func() { resultChannel <- FirstResponder(service, query, PlaylistID1, PlaylistID2) }()
-	/*
-		go func() { resultChannel <- FirstResponder(query, Image1, Image2) }()
-		go func() { resultChannel <- FirstResponder(query, Video1, Video2) }()
-	*/
+	go func() {
+		resultChannel <- FirstResponder(service, query, MetaSearch("PlaylistID1"), MetaSearch("PlaylistID2"))
+	}()
+
 	timeout := time.After(10 * time.Second)
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 1; i++ {
 		select {
 		case resultFromChannel := <-resultChannel:
 			resultsFromChannel = append(resultsFromChannel, resultFromChannel)
@@ -98,5 +100,5 @@ func Exfoliator(service *youtube.Service, query Query) (resultsFromChannel []Res
 			return
 		}
 	}
-	return
+	return resultsFromChannel
 }
