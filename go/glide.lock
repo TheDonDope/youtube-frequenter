@@ -1,14 +1,16 @@
-hash: 6e4f7b9e01cfef49d60755de11e40fbcdeba852fd23d8e2291982320798ae300
-updated: 2018-05-08T22:18:47.465609+02:00
+hash: a7ec318536e840b327b81996eacbd69809aabfa83300cbf3ac9cf544800ff34b
+updated: 2018-05-10T18:46:50.035966+02:00
 imports:
 - name: cloud.google.com/go
-  version: 29f476ffa9c4cd4fd14336b6043090ac1ad76733
+  version: 056a55f54a6cc77b440b31a56a5e7c3982d32811
   subpackages:
   - compute/metadata
 - name: github.com/golang/protobuf
   version: b4deda0973fb4c70b50d226b1af49f3da59f5265
   subpackages:
   - proto
+- name: github.com/jessevdk/go-flags
+  version: c6ca198ec95c841fdb89fc0de7496fed11ab854e
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
   subpackages:
