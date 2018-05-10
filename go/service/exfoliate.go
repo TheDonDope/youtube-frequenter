@@ -16,62 +16,50 @@ import (
 // - Playlists (With their PlaylistID and PlaylistName)
 // - SubscriberCount
 // - ViewCount
-func GetChannelInfo() Search {
-	return func(service *youtube.Service, channelMetaInfoChannel chan ChannelMetaInfo) {
-		channelMetaInfo := <-channelMetaInfoChannel
-		fmt.Println(fmt.Sprintf("Channel Info search starts running with meta info: %v", channelMetaInfo))
-		call := service.Channels.List("contentDetails,snippet,statistics")
-		call = call.ForUsername(channelMetaInfo.CustomURL)
+func GetChannelInfo(service *youtube.Service, channelMetaInfoChannel chan ChannelMetaInfo) {
 
-		response, responseError := call.Do()
-		HandleError(responseError, "GetChannelInfo Response error!")
+	fmt.Println("GetChannelInfo Call")
+	channelMetaInfo := <-channelMetaInfoChannel
+	fmt.Println(fmt.Sprintf("GetChannelInfo gets: %v", channelMetaInfo))
+	call := service.Channels.List("contentDetails,snippet,statistics")
+	call = call.ForUsername(channelMetaInfo.CustomURL)
 
-		firstItem := response.Items[0]
+	response, responseError := call.Do()
+	HandleError(responseError, "GetChannelInfo Response error!")
 
-		// Fill ChannelID
-		if channelMetaInfo.ChannelID == "" {
-			channelMetaInfo.ChannelID = firstItem.Id
-		}
+	firstItem := response.Items[0]
 
-		// Fill CustomURL
-		if channelMetaInfo.CustomURL == "" {
-			channelMetaInfo.CustomURL = firstItem.Snippet.CustomUrl
-		}
-
-		// Fill ChannelName
-		if channelMetaInfo.ChannelName == "" {
-			channelMetaInfo.ChannelName = firstItem.Snippet.Title
-		}
-
-		// Fill Playlists
-		if channelMetaInfo.Playlists == nil {
-			channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, "uploads", nil})
-			channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, "favorites", nil})
-		}
-
-		// Fill SubscriberCount
-		if channelMetaInfo.SubscriberCount == 0 {
-			channelMetaInfo.SubscriberCount = firstItem.Statistics.SubscriberCount
-		}
-
-		// Fill ViewCount
-		if channelMetaInfo.ViewCount == 0 {
-			channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
-		}
-
-		channelMetaInfoChannel <- channelMetaInfo
-
+	// Fill ChannelID
+	if channelMetaInfo.ChannelID == "" {
+		channelMetaInfo.ChannelID = firstItem.Id
 	}
-}
 
-// FirstResponder returns the first replica search result, whichever was the faster
-func FirstResponder(service *youtube.Service, channelMetaInfo ChannelMetaInfo, replicas ...Search) ChannelMetaInfo {
-	channelMetaInfoChannel := make(chan ChannelMetaInfo)
-	searchReplica := func(index int) { replicas[index](service, channelMetaInfoChannel) }
-	for replicaIndex := range replicas {
-		go searchReplica(replicaIndex)
+	// Fill CustomURL
+	if channelMetaInfo.CustomURL == "" {
+		channelMetaInfo.CustomURL = firstItem.Snippet.CustomUrl
 	}
-	return <-channelMetaInfoChannel
+
+	// Fill ChannelName
+	if channelMetaInfo.ChannelName == "" {
+		channelMetaInfo.ChannelName = firstItem.Snippet.Title
+	}
+
+	// Fill Playlists
+	if channelMetaInfo.Playlists == nil {
+		channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, "uploads", nil})
+		channelMetaInfo.Playlists = append(channelMetaInfo.Playlists, Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, "favorites", nil})
+	}
+
+	// Fill SubscriberCount
+	if channelMetaInfo.SubscriberCount == 0 {
+		channelMetaInfo.SubscriberCount = firstItem.Statistics.SubscriberCount
+	}
+
+	// Fill ViewCount
+	if channelMetaInfo.ViewCount == 0 {
+		channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
+	}
+	channelMetaInfoChannel <- channelMetaInfo
 }
 
 // Exfoliator exfoliates
@@ -79,12 +67,13 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	channelMetaInfoChannel := make(chan ChannelMetaInfo)
 
 	go func() {
-		channelMetaInfoChannel <- FirstResponder(service, channelMetaInfo, GetChannelInfo(), GetChannelInfo())
+		channelMetaInfoChannel <- channelMetaInfo
 	}()
-
-	timeout := time.After(10 * time.Second)
+	go GetChannelInfo(service, channelMetaInfoChannel)
+	timeout := time.After(5 * time.Second)
 	select {
 	case channelMetaInfoFromChannel := <-channelMetaInfoChannel:
+		fmt.Println(fmt.Sprintf("Exfoliator gets: %v", channelMetaInfoFromChannel))
 		channelMetaInfo = channelMetaInfoFromChannel
 	case <-timeout:
 		fmt.Println("timed out")
