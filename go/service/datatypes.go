@@ -33,4 +33,4 @@ type ChannelMetaInfo struct {
 }
 
 // Search calls the YouTube API
-type Search func(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo
+type Search func(service *youtube.Service, channelMetaInfoChannel chan ChannelMetaInfo)

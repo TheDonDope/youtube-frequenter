@@ -17,7 +17,8 @@ import (
 // - SubscriberCount
 // - ViewCount
 func GetChannelInfo() Search {
-	return func(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
+	return func(service *youtube.Service, channelMetaInfoChannel chan ChannelMetaInfo) {
+		channelMetaInfo := <-channelMetaInfoChannel
 		fmt.Println(fmt.Sprintf("Channel Info search starts running with meta info: %v", channelMetaInfo))
 		call := service.Channels.List("contentDetails,snippet,statistics")
 		call = call.ForUsername(channelMetaInfo.CustomURL)
@@ -58,14 +59,15 @@ func GetChannelInfo() Search {
 			channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
 		}
 
-		return channelMetaInfo
+		channelMetaInfoChannel <- channelMetaInfo
+
 	}
 }
 
 // FirstResponder returns the first replica search result, whichever was the faster
 func FirstResponder(service *youtube.Service, channelMetaInfo ChannelMetaInfo, replicas ...Search) ChannelMetaInfo {
 	channelMetaInfoChannel := make(chan ChannelMetaInfo)
-	searchReplica := func(index int) { channelMetaInfoChannel <- replicas[index](service, channelMetaInfo) }
+	searchReplica := func(index int) { replicas[index](service, channelMetaInfoChannel) }
 	for replicaIndex := range replicas {
 		go searchReplica(replicaIndex)
 	}
@@ -80,15 +82,14 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 		channelMetaInfoChannel <- FirstResponder(service, channelMetaInfo, GetChannelInfo(), GetChannelInfo())
 	}()
 
-	timeout := time.After(3 * time.Second)
-	for i := 0; i < 2; i++ {
-		select {
-		case channelMetaInfoFromChannel := <-channelMetaInfoChannel:
-			channelMetaInfo = channelMetaInfoFromChannel
-		case <-timeout:
-			fmt.Println("timed out")
-			return channelMetaInfo
-		}
+	timeout := time.After(10 * time.Second)
+	select {
+	case channelMetaInfoFromChannel := <-channelMetaInfoChannel:
+		channelMetaInfo = channelMetaInfoFromChannel
+	case <-timeout:
+		fmt.Println("timed out")
+		return channelMetaInfo
 	}
+
 	return channelMetaInfo
 }
