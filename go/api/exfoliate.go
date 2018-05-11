@@ -18,7 +18,7 @@ import (
 // - Playlists (With their PlaylistID and PlaylistName)
 // - SubscriberCount
 // - ViewCount
-func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo) <-chan ChannelMetaInfo {
+func GetChannelOverview(service *youtube.Service, inChannel <-chan ChannelMetaInfo) <-chan ChannelMetaInfo {
 	fmt.Println("Begin GetChannelOverview")
 	outChannel := make(chan ChannelMetaInfo)
 
