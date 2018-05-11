@@ -137,7 +137,7 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 
 				response, responseError := call.Do()
 
-				formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error!"+video.VideoID, i))
+				formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", i, video.VideoID))
 				if formattdErrorMessage != "" {
 					log.Fatal(formattdErrorMessage)
 				}
