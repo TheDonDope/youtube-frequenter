@@ -28,15 +28,16 @@ func main() {
 	}
 
 	youtubeService, serviceError := api.GetYouTubeService()
-	formattdErrorMessage := api.GetFormattedErrorMessage(serviceError, "Error creating YouTube client")
-	if formattdErrorMessage != "" {
-		log.Fatal(formattdErrorMessage)
+	if serviceError != nil {
+		formattdErrorMessage := api.GetFormattedErrorMessage(serviceError, "Error creating YouTube client")
+		if formattdErrorMessage != "" {
+			log.Println(formattdErrorMessage)
+		}
 	}
 	channelMetaInfo := api.ChannelMetaInfo{}
 	channelMetaInfo.CustomURL = opts.CustomURL
 	api.Printfln("Initial input channelMetaInfo: %+v", channelMetaInfo)
 	results := api.Exfoliator(youtubeService, channelMetaInfo)
 	api.Printfln("Exfoliator exfoliated successfully. Results: %+v", results)
-	elapsed := time.Since(start)
-	api.Printfln("Finishing youtube-tinfoil-expose @ %v. Overall time spent: %v ms.", time.Now().Format(time.RFC3339), elapsed)
+	api.Printfln("Finishing youtube-tinfoil-expose @ %v. Overall time spent: %v ms.", time.Now().Format(time.RFC3339), time.Since(start))
 }
