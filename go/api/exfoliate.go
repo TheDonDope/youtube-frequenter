@@ -72,10 +72,8 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 				}
 
 				channelMetaInfo.NextOperation = "GetVideoIDsOverview"
-				monoChannel <- channelMetaInfo
-			} else {
-				monoChannel <- channelMetaInfo
 			}
+			monoChannel <- channelMetaInfo
 		}
 	}()
 
@@ -108,10 +106,8 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				uploadPlaylist := channelMetaInfo.Playlists["uploads"]
 				uploadPlaylist.PlaylistItems = videos
 				channelMetaInfo.NextOperation = "GetCommentsOverview"
-				monoChannel <- channelMetaInfo
-			} else {
-				monoChannel <- channelMetaInfo
 			}
+			monoChannel <- channelMetaInfo
 		}
 	}()
 }
@@ -151,14 +147,11 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 
 						inputVideo.Comments = comments
 						channelMetaInfo.NextOperation = "GetObviouslyRelatedChannelsOverview"
-						monoChannel <- channelMetaInfo
 					}(i, video)
 				}
-			} else {
-				monoChannel <- channelMetaInfo
 			}
+			monoChannel <- channelMetaInfo
 		}
-
 	}()
 }
 
@@ -218,12 +211,11 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 
 						channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
 						channelMetaInfo.NextOperation = "None"
-						monoChannel <- channelMetaInfo
+
 					}(i, commentatorChannelID)
 				}
-			} else {
-				monoChannel <- channelMetaInfo
 			}
+			monoChannel <- channelMetaInfo
 		}
 	}()
 }
@@ -240,7 +232,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	GetCommentsOverview(service, monoChannel)
 	GetObviouslyRelatedChannelsOverview(service, monoChannel)
 
-	timeout := time.After(300 * time.Second)
+	timeout := time.After(20 * time.Second)
 	// time.Sleep(time.Second)
 
 	for {
