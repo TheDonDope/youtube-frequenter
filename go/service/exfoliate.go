@@ -91,13 +91,15 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 		response, responseError := call.Do()
 		HandleError(responseError, "GetVideoIDsOverview Response error!")
 
+		var videos []Video
 		for _, item := range response.Items {
 			video := Video{VideoID: item.Id}
-			uploadPlaylist := channelMetaInfo.Playlists["uploads"]
-			uploadPlaylist.PlaylistItems = append(uploadPlaylist.PlaylistItems, video)
+			videos = append(videos, video)
 			fmt.Println(fmt.Sprintf("Appended video %s to playlist uploads", video))
-			fmt.Println(fmt.Sprintf("uploadPlaylist.PlaylistItems now: %+v", uploadPlaylist.PlaylistItems))
 		}
+		uploadPlaylist := channelMetaInfo.Playlists["uploads"]
+		uploadPlaylist.PlaylistItems = videos
+		fmt.Println(fmt.Sprintf("uploadPlaylist.PlaylistItems now: %+v", uploadPlaylist.PlaylistItems))
 		fmt.Println(fmt.Sprintf("GetVideoIDsOverview filling complete. Result: %+v", channelMetaInfo))
 		fmt.Println("Sending result to getVideoIDsOverviewOutChannel...")
 		outChannel <- channelMetaInfo
@@ -149,12 +151,12 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	}()
 	getChannelOverviewOutChannel := GetChannelOverview(service, initialInChannel)
 	getVideoIDsOverviewOutChannel := GetVideoIDsOverview(service, getChannelOverviewOutChannel)
-	//getCommentsOverviewOutChannel := GetCommentsOverview(service, getVideoIDsOverviewOutChannel)
+	getCommentsOverviewOutChannel := GetCommentsOverview(service, getVideoIDsOverviewOutChannel)
 	timeout := time.After(20 * time.Second)
 	// time.Sleep(time.Second)
 	select {
-	case channelMetaInfo = <-getVideoIDsOverviewOutChannel:
-		fmt.Println(fmt.Sprintf("Got %+v from getVideoIDsOverviewOutChannel", channelMetaInfo))
+	case channelMetaInfo = <-getCommentsOverviewOutChannel:
+		fmt.Println(fmt.Sprintf("Got %+v from getCommentsOverviewOutChannel", channelMetaInfo))
 	case <-timeout:
 		fmt.Println("Request timed out...")
 		return channelMetaInfo
