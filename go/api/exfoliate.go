@@ -265,7 +265,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 			monoChannel <- channelMetaInfo
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		case <-timeout:
-			log.Println("Initial Request timed out (10sec)")
+			log.Println("Request timed out (30 sec)")
 			return channelMetaInfo
 		}
 	}
