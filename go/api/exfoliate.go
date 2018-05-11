@@ -153,7 +153,7 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 				for _, item := range response.Items {
 					comment := new(Comment)
 					comment.CommentID = item.Snippet.TopLevelComment.Id
-					comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(string)
+					comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
 
 					comments = append(comments, comment)
 					Printfln("Appended comment: %v to video: %v", comment, video)
