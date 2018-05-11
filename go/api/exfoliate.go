@@ -23,6 +23,7 @@ func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo
 	outChannel := make(chan ChannelMetaInfo)
 
 	go func() {
+		// defer close(outChannel)
 		//fmt.Println("Starting goroutine in GetChannelOverview")
 		channelMetaInfo := <-inChannel
 		call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
@@ -91,6 +92,7 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 	outChannel := make(chan ChannelMetaInfo)
 
 	go func() {
+		// defer close(outChannel)
 		//fmt.Println("Starting goroutine in GetVideoIDsOverview")
 		channelMetaInfo := <-inChannel
 		//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
@@ -131,8 +133,10 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaInfo) <-chan ChannelMetaInfo {
 	fmt.Println("Begin GetCommentsOverview")
 	outChannel := make(chan ChannelMetaInfo)
+
 	channelMetaInfo := <-inChannel
 	go func() {
+		// defer close(outChannel)
 		for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
 			go func(index int, inputVideo *Video) {
 				//Printfln("Starting goroutine GetCommentsOverview#%d", i)
@@ -181,6 +185,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 	outChannel := make(chan ChannelMetaInfo)
 
 	go func() {
+		// defer close(outChannel)
 		channelMetaInfo := <-inChannel
 		for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
 			go func(index int, inputCommentatorChannelID string) {
@@ -251,6 +256,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	initialInChannel := make(chan ChannelMetaInfo)
 
 	go func() {
+		defer close(initialInChannel)
 		initialInChannel <- channelMetaInfo
 	}()
 	getChannelOverviewOutChannel := GetChannelOverview(service, initialInChannel)
@@ -261,15 +267,15 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	// time.Sleep(time.Second)
 	select {
 	case channelMetaInfo = <-getObviouslyRelatedChannelsOverviewChannel:
-		Printfln("#relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
+		Printfln("Initial #relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
 	case <-timeout:
-		fmt.Println("Request timed out...")
+		fmt.Println("Initial Request timed out (10sec)")
 	}
 
 	// check for unused channelMetaInfo
-	timeoutAfter := time.After(10 * time.Second)
+	timeoutAfter := time.After(5 * time.Second)
 	// time.Sleep(time.Second)
-	for i := 0; i < 50; i++ {
+	for i := 0; i < 10000; i++ {
 		select {
 		case channelMetaInfo = <-getChannelOverviewOutChannel:
 			Printfln("!!!getChannelOverviewOutChannel%s", "")
@@ -277,8 +283,10 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 			Printfln("!!!getVideoIDsOverviewOutChannel%s", "")
 		case channelMetaInfo = <-getCommentsOverviewOutChannel:
 			Printfln("!!getCommentsOverviewOutChannel%s", "")
+		case channelMetaInfo = <-getObviouslyRelatedChannelsOverviewChannel:
+			Printfln("After #relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
 		case <-timeoutAfter:
-			fmt.Println("Request timed out...")
+			Printfln("After Request timed out (5sec): %d", i)
 			return channelMetaInfo
 		}
 	}
