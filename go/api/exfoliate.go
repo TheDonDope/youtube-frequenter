@@ -138,7 +138,7 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 				Printfln("Starting goroutine GetCommentsOverview#%d", i)
 
 				//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
-				call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID)
+				call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(100)
 
 				response, responseError := call.Do()
 
@@ -197,7 +197,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 					return
 				}
 
-				getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites)
+				getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites).MaxResults(50)
 				getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 
 				if getPlaylistItemsResponseError != nil {
@@ -260,7 +260,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	// time.Sleep(time.Second)
 	select {
 	case channelMetaInfo = <-getObviouslyRelatedChannelsOverviewChannel:
-		Printfln("Got %+v from getCommentsOverviewOutChannel", channelMetaInfo)
+		Printfln("#relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
 	case <-timeout:
 		fmt.Println("Request timed out...")
 		return channelMetaInfo
