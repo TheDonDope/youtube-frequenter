@@ -232,7 +232,8 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 				}
 
 				channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
-				Printfln("GetCommentsGetObviouslyRelatedChannelsOverviewOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
+				Printfln("GetCommentsGetObviouslyRelatedChannelsOverviewOverview#%d filling complete.", i)
+				Printfln("Result: %+v", channelMetaInfo)
 				fmt.Println("Sending result to GetObviouslyRelatedChannelsOverview...")
 				outChannel <- channelMetaInfo
 				fmt.Println("Result successfully sent to GetObviouslyRelatedChannelsOverviewChannel")
