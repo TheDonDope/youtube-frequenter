@@ -179,8 +179,9 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-chan ChannelMetaInfo) <-chan ChannelMetaInfo {
 	fmt.Println("Begin GetObviouslyRelatedChannelsOverview")
 	outChannel := make(chan ChannelMetaInfo)
-	channelMetaInfo := <-inChannel
+
 	go func() {
+		channelMetaInfo := <-inChannel
 		for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
 			go func(index int, inputCommentatorChannelID string) {
 				//Printfln("Starting goroutine GetObviouslyRelatedChannelsOverview#%d", i)
@@ -263,27 +264,24 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 		Printfln("#relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
 	case <-timeout:
 		fmt.Println("Request timed out...")
-		return channelMetaInfo
 	}
 
-	/*
-		// check for unused channelMetaInfo
-		timeoutAfter := time.After(10 * time.Second)
-		// time.Sleep(time.Second)
-		for i := 0; i < 50; i++ {
-			select {
-			case channelMetaInfo = <-getChannelOverviewOutChannel:
-				Printfln("!!!getChannelOverviewOutChannel%s", "")
-			case channelMetaInfo = <-getVideoIDsOverviewOutChannel:
-				Printfln("!!!getVideoIDsOverviewOutChannel%s", "")
-			case channelMetaInfo = <-getCommentsOverviewOutChannel:
-				Printfln("!!getCommentsOverviewOutChannel%s", "")
-			case <-timeoutAfter:
-				fmt.Println("Request timed out...")
-				return channelMetaInfo
-			}
+	// check for unused channelMetaInfo
+	timeoutAfter := time.After(10 * time.Second)
+	// time.Sleep(time.Second)
+	for i := 0; i < 50; i++ {
+		select {
+		case channelMetaInfo = <-getChannelOverviewOutChannel:
+			Printfln("!!!getChannelOverviewOutChannel%s", "")
+		case channelMetaInfo = <-getVideoIDsOverviewOutChannel:
+			Printfln("!!!getVideoIDsOverviewOutChannel%s", "")
+		case channelMetaInfo = <-getCommentsOverviewOutChannel:
+			Printfln("!!getCommentsOverviewOutChannel%s", "")
+		case <-timeoutAfter:
+			fmt.Println("Request timed out...")
+			return channelMetaInfo
 		}
-	*/
+	}
 
 	return channelMetaInfo
 }
