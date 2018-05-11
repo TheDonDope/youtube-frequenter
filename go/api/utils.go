@@ -2,20 +2,21 @@ package api
 
 import (
 	"fmt"
-	"log"
 )
 
-// HandleError handles errors
-func HandleError(errorToHandle error, errorMessage string) {
+// GetFormattedErrorMessage returns a formatted error message for the given
+// errorToHandle and errorMessage.
+func GetFormattedErrorMessage(errorToHandle error, errorMessage string) string {
 	if errorMessage == "" {
 		errorMessage = "Error making API call"
 	}
 	if errorToHandle != nil {
-		log.Fatalf(errorMessage+": %v", errorToHandle.Error())
+		return fmt.Sprintf(errorMessage+": %v", errorToHandle.Error())
 	}
+	return ""
 }
 
-// Printfln ...
+// Printfln prints a line with a formatted string.
 func Printfln(format string, a ...interface{}) {
 	fmt.Println(fmt.Sprintf(format, a))
 }

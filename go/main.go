@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 	"time"
 
@@ -27,7 +28,10 @@ func main() {
 	}
 
 	youtubeService, serviceError := api.GetYouTubeService()
-	api.HandleError(serviceError, "Error creating YouTube client")
+	formattdErrorMessage := api.GetFormattedErrorMessage(serviceError, "Error creating YouTube client")
+	if formattdErrorMessage != "" {
+		log.Fatal(formattdErrorMessage)
+	}
 	channelMetaInfo := api.ChannelMetaInfo{}
 	channelMetaInfo.CustomURL = opts.CustomURL
 	api.Printfln("Initial input channelMetaInfo: %+v", channelMetaInfo)

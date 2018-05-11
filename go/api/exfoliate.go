@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 	"time"
 
 	"google.golang.org/api/youtube/v3"
@@ -26,7 +27,10 @@ func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo
 		call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
 
 		response, responseError := call.Do()
-		HandleError(responseError, "GetChannelOverview Response error!")
+		formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetChannelOverview Response error!")
+		if formattdErrorMessage != "" {
+			log.Fatal(formattdErrorMessage)
+		}
 
 		firstItem := response.Items[0]
 
@@ -90,7 +94,10 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 		call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(10)
 
 		response, responseError := call.Do()
-		HandleError(responseError, "GetVideoIDsOverview Response error!")
+		formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetVideoIDsOverview Response error!")
+		if formattdErrorMessage != "" {
+			log.Fatal(formattdErrorMessage)
+		}
 
 		var videos []*Video
 		for _, item := range response.Items {
@@ -129,7 +136,11 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 				call := service.CommentThreads.List("snippet").VideoId(video.VideoID)
 
 				response, responseError := call.Do()
-				HandleError(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! "+video.VideoID, i))
+
+				formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error!"+video.VideoID, i))
+				if formattdErrorMessage != "" {
+					log.Fatal(formattdErrorMessage)
+				}
 
 				var comments []*Comment
 				for _, item := range response.Items {
