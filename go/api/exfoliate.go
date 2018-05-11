@@ -93,7 +93,7 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 		fmt.Println("Starting goroutine in GetVideoIDsOverview")
 		channelMetaInfo := <-inChannel
 		//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
-		call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(10)
+		call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
 
 		response, responseError := call.Do()
 		if responseError != nil {
@@ -154,6 +154,7 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 					comment := new(Comment)
 					comment.CommentID = item.Snippet.TopLevelComment.Id
 					comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
+					channelMetaInfo.CommentAuthorChannelIDs = append(channelMetaInfo.CommentAuthorChannelIDs, comment.AuthorChannelID)
 
 					comments = append(comments, comment)
 					Printfln("Appended comment: %v to video: %v", comment, video)
