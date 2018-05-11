@@ -185,32 +185,29 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 				Printfln("Starting goroutine GetObviouslyRelatedChannelsOverview#%d", i)
 
 				//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
-				call := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
+				getChannelCall := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
+				getChannelResponse, getChannelResponseError := getChannelCall.Do()
 
-				allPlaylistsResponse, allPlaylistsResponseError := call.Do()
-
-				if allPlaylistsResponseError != nil {
-					formattdErrorMessage := GetFormattedErrorMessage(allPlaylistsResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
+				if getChannelResponseError != nil {
+					formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
 					if formattdErrorMessage != "" {
 						log.Println(formattdErrorMessage)
 					}
 					return
 				}
 
-				// ObviouslyRelatedChannelIDs
-				/*
-					var comments []*Comment
-					for _, item := range allPlaylistsResponse.Items {
-						comment := new(Comment)
-						comment.CommentID = item.Snippet.TopLevelComment.Id
-						comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
-						channelMetaInfo.CommentAuthorChannelIDs = append(channelMetaInfo.CommentAuthorChannelIDs, comment.AuthorChannelID)
+				getPlaylistItemsCall := service.PlaylistItems.List("snippet,contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites)
+				getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 
-						comments = append(comments, comment)
-						Printfln("Appended comment: %v to video: %v", comment, video)
-						Printfln("video.Comments now: %+v", video.Comments)
+				if getPlaylistItemsResponseError != nil {
+					formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
+					if formattedErrorMesage != "" {
+						log.Println(formattedErrorMesage)
 					}
-				*/
+					return
+				}
+
+				// ObviouslyRelatedChannelIDs
 
 				channelMetaInfo.ObviouslyRelatedChannelIDs = comments
 				Printfln("GetCommentsOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
