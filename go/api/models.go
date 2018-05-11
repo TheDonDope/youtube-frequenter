@@ -10,13 +10,13 @@ type Comment struct {
 type Video struct {
 	VideoID           string
 	UploaderChannelID string
-	Comments          []Comment
+	Comments          []*Comment
 }
 
 // Playlist information of a YouTube playlist
 type Playlist struct {
 	PlaylistID    string
-	PlaylistItems []Video
+	PlaylistItems []*Video
 }
 
 // ChannelMetaInfo of a YouTube channel
@@ -26,5 +26,5 @@ type ChannelMetaInfo struct {
 	CustomURL       string
 	SubscriberCount uint64
 	ViewCount       uint64
-	Playlists       map[string]Playlist
+	Playlists       map[string]*Playlist
 }
