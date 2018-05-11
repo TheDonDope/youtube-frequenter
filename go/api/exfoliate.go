@@ -94,12 +94,16 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 
 		var videos []*Video
 		for _, item := range response.Items {
-			video := &Video{VideoID: item.Id}
+			video := &Video{VideoID: item.Snippet.ResourceId.VideoId}
 			videos = append(videos, video)
 			//Printfln("Appended video %s to playlist uploads", video)
 		}
+
 		uploadPlaylist := channelMetaInfo.Playlists["uploads"]
+		Printfln("playlistID: %s", uploadPlaylist.PlaylistID)
 		uploadPlaylist.PlaylistItems = videos
+		Printfln("PlaylistItems: %s", uploadPlaylist.PlaylistItems)
+
 		//Printfln("uploadPlaylist.PlaylistItems now: %+v", uploadPlaylist.PlaylistItems)
 		//Printfln("GetVideoIDsOverview filling complete. Result: %+v", channelMetaInfo)
 		Printfln("Sending result to getVideoIDsOverviewOutChannel...")
