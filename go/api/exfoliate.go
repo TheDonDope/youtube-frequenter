@@ -21,60 +21,62 @@ import (
 func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
 		fmt.Println("<<<<<Begin GetChannelOverview Go Routine")
-		channelMetaInfo := <-monoChannel
-		if channelMetaInfo.NextOperation == "GetChannelOverview" {
+		defer fmt.Println("End GetChannelOverview Go Routine>>>>>")
+		for {
+			channelMetaInfo := <-monoChannel
+			if channelMetaInfo.NextOperation == "GetChannelOverview" {
 
-			call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
+				call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
 
-			response, responseError := call.Do()
-			if responseError != nil {
-				formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetChannelOverview Response error!")
-				if formattdErrorMessage != "" {
-					log.Println(formattdErrorMessage)
+				response, responseError := call.Do()
+				if responseError != nil {
+					formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetChannelOverview Response error!")
+					if formattdErrorMessage != "" {
+						log.Println(formattdErrorMessage)
+					}
 				}
+
+				firstItem := response.Items[0]
+
+				// Fill ChannelID
+				if channelMetaInfo.ChannelID == "" {
+					channelMetaInfo.ChannelID = firstItem.Id
+				}
+
+				// Fill CustomURL
+				if channelMetaInfo.CustomURL == "" {
+					channelMetaInfo.CustomURL = firstItem.Snippet.CustomUrl
+				}
+
+				// Fill ChannelName
+				if channelMetaInfo.ChannelName == "" {
+					channelMetaInfo.ChannelName = firstItem.Snippet.Title
+				}
+
+				// Fill Playlists
+				if channelMetaInfo.Playlists == nil {
+					channelMetaInfo.Playlists = make(map[string]*Playlist)
+					var videos []*Video
+					channelMetaInfo.Playlists["uploads"] = &Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, videos}
+					channelMetaInfo.Playlists["favorites"] = &Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, videos}
+				}
+
+				// Fill SubscriberCount
+				if channelMetaInfo.SubscriberCount == 0 {
+					channelMetaInfo.SubscriberCount = firstItem.Statistics.SubscriberCount
+				}
+
+				// Fill ViewCount
+				if channelMetaInfo.ViewCount == 0 {
+					channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
+				}
+
+				channelMetaInfo.NextOperation = "GetVideoIDsOverview"
+				monoChannel <- channelMetaInfo
+			} else {
+				monoChannel <- channelMetaInfo
 			}
-
-			firstItem := response.Items[0]
-
-			// Fill ChannelID
-			if channelMetaInfo.ChannelID == "" {
-				channelMetaInfo.ChannelID = firstItem.Id
-			}
-
-			// Fill CustomURL
-			if channelMetaInfo.CustomURL == "" {
-				channelMetaInfo.CustomURL = firstItem.Snippet.CustomUrl
-			}
-
-			// Fill ChannelName
-			if channelMetaInfo.ChannelName == "" {
-				channelMetaInfo.ChannelName = firstItem.Snippet.Title
-			}
-
-			// Fill Playlists
-			if channelMetaInfo.Playlists == nil {
-				channelMetaInfo.Playlists = make(map[string]*Playlist)
-				var videos []*Video
-				channelMetaInfo.Playlists["uploads"] = &Playlist{firstItem.ContentDetails.RelatedPlaylists.Uploads, videos}
-				channelMetaInfo.Playlists["favorites"] = &Playlist{firstItem.ContentDetails.RelatedPlaylists.Favorites, videos}
-			}
-
-			// Fill SubscriberCount
-			if channelMetaInfo.SubscriberCount == 0 {
-				channelMetaInfo.SubscriberCount = firstItem.Statistics.SubscriberCount
-			}
-
-			// Fill ViewCount
-			if channelMetaInfo.ViewCount == 0 {
-				channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
-			}
-
-			channelMetaInfo.NextOperation = "GetVideoIDsOverview"
-			monoChannel <- channelMetaInfo
-		} else {
-			monoChannel <- channelMetaInfo
 		}
-		fmt.Println("End GetChannelOverview Go Routine>>>>>")
 	}()
 
 }
@@ -83,32 +85,34 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
 		fmt.Println("<<<<<Begin GetVideoIDsOverview Go Routine")
-		channelMetaInfo := <-monoChannel
-		if channelMetaInfo.NextOperation == "GetVideoIDsOverview" {
-			call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
+		defer fmt.Println("End GetVideoIDsOverview Go Routine>>>>>")
+		for {
+			channelMetaInfo := <-monoChannel
+			if channelMetaInfo.NextOperation == "GetVideoIDsOverview" {
+				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
 
-			response, responseError := call.Do()
-			if responseError != nil {
-				formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetVideoIDsOverview Response error!")
-				if formattdErrorMessage != "" {
-					log.Println(formattdErrorMessage)
+				response, responseError := call.Do()
+				if responseError != nil {
+					formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetVideoIDsOverview Response error!")
+					if formattdErrorMessage != "" {
+						log.Println(formattdErrorMessage)
+					}
 				}
-			}
 
-			var videos []*Video
-			for _, item := range response.Items {
-				video := &Video{VideoID: item.Snippet.ResourceId.VideoId}
-				videos = append(videos, video)
-			}
+				var videos []*Video
+				for _, item := range response.Items {
+					video := &Video{VideoID: item.Snippet.ResourceId.VideoId}
+					videos = append(videos, video)
+				}
 
-			uploadPlaylist := channelMetaInfo.Playlists["uploads"]
-			uploadPlaylist.PlaylistItems = videos
-			channelMetaInfo.NextOperation = "GetCommentsOverview"
-			monoChannel <- channelMetaInfo
-		} else {
-			monoChannel <- channelMetaInfo
+				uploadPlaylist := channelMetaInfo.Playlists["uploads"]
+				uploadPlaylist.PlaylistItems = videos
+				channelMetaInfo.NextOperation = "GetCommentsOverview"
+				monoChannel <- channelMetaInfo
+			} else {
+				monoChannel <- channelMetaInfo
+			}
 		}
-		fmt.Println("End GetVideoIDsOverview Go Routine>>>>>")
 	}()
 }
 
@@ -116,42 +120,45 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
 		fmt.Println("<<<<<Begin GetCommentsOverview Go Routine")
-		channelMetaInfo := <-monoChannel
-		if channelMetaInfo.NextOperation == "GetCommentsOverview" {
+		defer fmt.Println("End GetCommentsOverview Go Routine>>>>>")
+		for {
+			channelMetaInfo := <-monoChannel
+			if channelMetaInfo.NextOperation == "GetCommentsOverview" {
 
-			for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
-				go func(index int, inputVideo *Video) {
-					call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(100)
+				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
+					go func(index int, inputVideo *Video) {
+						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(100)
 
-					response, responseError := call.Do()
+						response, responseError := call.Do()
 
-					if responseError != nil {
-						formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
-						if formattdErrorMessage != "" {
-							log.Println(formattdErrorMessage)
+						if responseError != nil {
+							formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
+							if formattdErrorMessage != "" {
+								log.Println(formattdErrorMessage)
+							}
+							return
 						}
-						return
-					}
 
-					var comments []*Comment
-					for _, item := range response.Items {
-						comment := new(Comment)
-						comment.CommentID = item.Snippet.TopLevelComment.Id
-						comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
-						channelMetaInfo.CommentAuthorChannelIDs = append(channelMetaInfo.CommentAuthorChannelIDs, comment.AuthorChannelID)
+						var comments []*Comment
+						for _, item := range response.Items {
+							comment := new(Comment)
+							comment.CommentID = item.Snippet.TopLevelComment.Id
+							comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
+							channelMetaInfo.CommentAuthorChannelIDs = append(channelMetaInfo.CommentAuthorChannelIDs, comment.AuthorChannelID)
 
-						comments = append(comments, comment)
-					}
+							comments = append(comments, comment)
+						}
 
-					inputVideo.Comments = comments
-					channelMetaInfo.NextOperation = "GetObviouslyRelatedChannelsOverview"
-					monoChannel <- channelMetaInfo
-				}(i, video)
+						inputVideo.Comments = comments
+						channelMetaInfo.NextOperation = "GetObviouslyRelatedChannelsOverview"
+						monoChannel <- channelMetaInfo
+					}(i, video)
+				}
+			} else {
+				monoChannel <- channelMetaInfo
 			}
-		} else {
-			monoChannel <- channelMetaInfo
 		}
-		fmt.Println("End GetCommentsOverview Go Routine>>>>>")
+
 	}()
 }
 
@@ -159,63 +166,65 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
 		fmt.Println("<<<<<Begin GetObviouslyRelatedChannelsOverview Go Routine")
-		channelMetaInfo := <-monoChannel
-		if channelMetaInfo.NextOperation == "GetObviouslyRelatedChannelsOverview" {
-			for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
-				go func(index int, inputCommentatorChannelID string) {
-					getChannelCall := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
-					getChannelResponse, getChannelResponseError := getChannelCall.Do()
+		defer fmt.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
+		for {
+			channelMetaInfo := <-monoChannel
+			if channelMetaInfo.NextOperation == "GetObviouslyRelatedChannelsOverview" {
+				for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
+					go func(index int, inputCommentatorChannelID string) {
+						getChannelCall := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
+						getChannelResponse, getChannelResponseError := getChannelCall.Do()
 
-					if getChannelResponseError != nil {
-						formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
-						if formattdErrorMessage != "" {
-							log.Println(formattdErrorMessage)
+						if getChannelResponseError != nil {
+							formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
+							if formattdErrorMessage != "" {
+								log.Println(formattdErrorMessage)
+							}
+							return
 						}
-						return
-					}
 
-					getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites).MaxResults(50)
-					getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
+						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites).MaxResults(50)
+						getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 
-					if getPlaylistItemsResponseError != nil {
-						formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
-						if formattedErrorMesage != "" {
-							log.Println(formattedErrorMesage)
+						if getPlaylistItemsResponseError != nil {
+							formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
+							if formattedErrorMesage != "" {
+								log.Println(formattedErrorMesage)
+							}
+							return
 						}
-						return
-					}
 
-					var favoritedVideoIDs []string
-					for _, item := range getPlaylistItemsResponse.Items {
-						favoritedVideoIDs = append(favoritedVideoIDs, item.ContentDetails.VideoId)
-					}
-
-					getRelatedChannelCall := service.Videos.List("snippet").Id(strings.Join(favoritedVideoIDs, ","))
-					getRelatedChannelResponse, getRelatedChannelResponseError := getRelatedChannelCall.Do()
-
-					if getRelatedChannelResponseError != nil {
-						formattedErrorMesage := GetFormattedErrorMessage(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
-						if formattedErrorMesage != "" {
-							log.Println(formattedErrorMesage)
+						var favoritedVideoIDs []string
+						for _, item := range getPlaylistItemsResponse.Items {
+							favoritedVideoIDs = append(favoritedVideoIDs, item.ContentDetails.VideoId)
 						}
-						return
-					}
 
-					var obviouslyRelatedChannelNames []string
-					// ObviouslyRelatedChannelIDs
-					for _, item := range getRelatedChannelResponse.Items {
-						obviouslyRelatedChannelNames = append(obviouslyRelatedChannelNames, item.Snippet.ChannelTitle)
-					}
+						getRelatedChannelCall := service.Videos.List("snippet").Id(strings.Join(favoritedVideoIDs, ","))
+						getRelatedChannelResponse, getRelatedChannelResponseError := getRelatedChannelCall.Do()
 
-					channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
-					channelMetaInfo.NextOperation = "None"
-					monoChannel <- channelMetaInfo
-				}(i, commentatorChannelID)
+						if getRelatedChannelResponseError != nil {
+							formattedErrorMesage := GetFormattedErrorMessage(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
+							if formattedErrorMesage != "" {
+								log.Println(formattedErrorMesage)
+							}
+							return
+						}
+
+						var obviouslyRelatedChannelNames []string
+						// ObviouslyRelatedChannelIDs
+						for _, item := range getRelatedChannelResponse.Items {
+							obviouslyRelatedChannelNames = append(obviouslyRelatedChannelNames, item.Snippet.ChannelTitle)
+						}
+
+						channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
+						channelMetaInfo.NextOperation = "None"
+						monoChannel <- channelMetaInfo
+					}(i, commentatorChannelID)
+				}
+			} else {
+				monoChannel <- channelMetaInfo
 			}
-		} else {
-			monoChannel <- channelMetaInfo
 		}
-		fmt.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
 	}()
 }
 
@@ -231,10 +240,10 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	GetCommentsOverview(service, monoChannel)
 	GetObviouslyRelatedChannelsOverview(service, monoChannel)
 
-	timeout := time.After(10 * time.Second)
+	timeout := time.After(30 * time.Second)
 	// time.Sleep(time.Second)
 
-	for i := 0; i < 1000; i++ {
+	for {
 		select {
 		case channelMetaInfo = <-monoChannel:
 			if channelMetaInfo.NextOperation == "None" {
