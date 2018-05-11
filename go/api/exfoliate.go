@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"google.golang.org/api/youtube/v3"
@@ -74,7 +75,7 @@ func GetChannelOverview(service *youtube.Service, inChannel chan ChannelMetaInfo
 			channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
 			//Printfln("channelMetaInfo.ViewCount: %d", channelMetaInfo.ViewCount)
 		}
-		Printfln("GetChannelOverview filling complete. Result: %+v", channelMetaInfo)
+		//Printfln("GetChannelOverview filling complete. Result: %+v", channelMetaInfo)
 		fmt.Println("Sending result to getChannelOverviewOutChannel...")
 		outChannel <- channelMetaInfo
 		fmt.Println("Result successfully sent to getChannelOverviewOutChannel")
@@ -111,9 +112,9 @@ func GetVideoIDsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 		}
 
 		uploadPlaylist := channelMetaInfo.Playlists["uploads"]
-		Printfln("playlistID: %s", uploadPlaylist.PlaylistID)
+		//Printfln("playlistID: %s", uploadPlaylist.PlaylistID)
 		uploadPlaylist.PlaylistItems = videos
-		Printfln("PlaylistItems: %s", uploadPlaylist.PlaylistItems)
+		//Printfln("PlaylistItems: %s", uploadPlaylist.PlaylistItems)
 
 		//Printfln("uploadPlaylist.PlaylistItems now: %+v", uploadPlaylist.PlaylistItems)
 		//Printfln("GetVideoIDsOverview filling complete. Result: %+v", channelMetaInfo)
@@ -157,12 +158,12 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 					channelMetaInfo.CommentAuthorChannelIDs = append(channelMetaInfo.CommentAuthorChannelIDs, comment.AuthorChannelID)
 
 					comments = append(comments, comment)
-					Printfln("Appended comment: %v to video: %v", comment, video)
-					Printfln("video.Comments now: %+v", video.Comments)
+					//Printfln("Appended comment: %v to video: %v", comment, video)
+					//Printfln("video.Comments now: %+v", video.Comments)
 				}
 
 				video.Comments = comments
-				Printfln("GetCommentsOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
+				//Printfln("GetCommentsOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
 				fmt.Println("Sending result to getCommentsOverviewOutChannel...")
 				outChannel <- channelMetaInfo
 				fmt.Println("Result successfully sent to getCommentsOverviewOutChannel")
@@ -196,7 +197,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 					return
 				}
 
-				getPlaylistItemsCall := service.PlaylistItems.List("snippet,contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites)
+				getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites)
 				getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 
 				if getPlaylistItemsResponseError != nil {
@@ -207,18 +208,39 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 					return
 				}
 
+				var favoritedVideoIDs []string
 				// ObviouslyRelatedChannelIDs
+				for _, item := range getPlaylistItemsResponse.Items {
+					favoritedVideoIDs = append(favoritedVideoIDs, item.ContentDetails.VideoId)
+				}
 
-				channelMetaInfo.ObviouslyRelatedChannelIDs = comments
-				Printfln("GetCommentsOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
-				fmt.Println("Sending result to getCommentsOverviewOutChannel...")
+				getRelatedChannelCall := service.Videos.List("snippet").Id(strings.Join(favoritedVideoIDs, ","))
+				getRelatedChannelResponse, getRelatedChannelResponseError := getRelatedChannelCall.Do()
+
+				if getRelatedChannelResponseError != nil {
+					formattedErrorMesage := GetFormattedErrorMessage(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
+					if formattedErrorMesage != "" {
+						log.Println(formattedErrorMesage)
+					}
+					return
+				}
+
+				var obviouslyRelatedChannelNames []string
+				// ObviouslyRelatedChannelIDs
+				for _, item := range getRelatedChannelResponse.Items {
+					obviouslyRelatedChannelNames = append(obviouslyRelatedChannelNames, item.Snippet.ChannelTitle)
+				}
+
+				channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
+				Printfln("GetCommentsGetObviouslyRelatedChannelsOverviewOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
+				fmt.Println("Sending result to GetObviouslyRelatedChannelsOverview...")
 				outChannel <- channelMetaInfo
-				fmt.Println("Result successfully sent to getCommentsOverviewOutChannel")
+				fmt.Println("Result successfully sent to GetObviouslyRelatedChannelsOverviewChannel")
 			}(commentatorChannelID)
-			Printfln("Ending goroutine in GetCommentsOverview#%d", i)
+			Printfln("Ending goroutine in GetCommGetObviouslyRelatedChannelsOverviewentsOverview#%d", i)
 		}
 	}()
-	fmt.Println("End GetCommentsOverview. Returning getCommentsOverviewOutChannel.")
+	fmt.Println("End GetObviouslyRelatedChannelsOverview. Returning GetObviouslyRelatedChannelsOverviewChannel.")
 	return outChannel
 }
 
