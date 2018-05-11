@@ -134,7 +134,7 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 	channelMetaInfo := <-inChannel
 	go func() {
 		for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
-			go func(inputVideo *Video) {
+			go func(index int, inputVideo *Video) {
 				//Printfln("Starting goroutine GetCommentsOverview#%d", i)
 
 				//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
@@ -143,7 +143,7 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 				response, responseError := call.Do()
 
 				if responseError != nil {
-					formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", i, inputVideo.VideoID))
+					formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
 					if formattdErrorMessage != "" {
 						log.Println(formattdErrorMessage)
 					}
@@ -162,12 +162,12 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 					//Printfln("video.Comments now: %+v", video.Comments)
 				}
 
-				video.Comments = comments
+				inputVideo.Comments = comments
 				//Printfln("GetCommentsOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
 				fmt.Println("Sending result to getCommentsOverviewOutChannel...")
 				outChannel <- channelMetaInfo
 				fmt.Println("Result successfully sent to getCommentsOverviewOutChannel")
-			}(video)
+			}(i, video)
 			//Printfln("Ending goroutine in GetCommentsOverview#%d", i)
 		}
 	}()
@@ -182,7 +182,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 	channelMetaInfo := <-inChannel
 	go func() {
 		for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
-			go func(inputCommentatorChannelID string) {
+			go func(index int, inputCommentatorChannelID string) {
 				//Printfln("Starting goroutine GetObviouslyRelatedChannelsOverview#%d", i)
 
 				//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
@@ -190,7 +190,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 				getChannelResponse, getChannelResponseError := getChannelCall.Do()
 
 				if getChannelResponseError != nil {
-					formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
+					formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 					if formattdErrorMessage != "" {
 						log.Println(formattdErrorMessage)
 					}
@@ -201,7 +201,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 				getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 
 				if getPlaylistItemsResponseError != nil {
-					formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
+					formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 					if formattedErrorMesage != "" {
 						log.Println(formattedErrorMesage)
 					}
@@ -218,7 +218,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 				getRelatedChannelResponse, getRelatedChannelResponseError := getRelatedChannelCall.Do()
 
 				if getRelatedChannelResponseError != nil {
-					formattedErrorMesage := GetFormattedErrorMessage(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
+					formattedErrorMesage := GetFormattedErrorMessage(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 					if formattedErrorMesage != "" {
 						log.Println(formattedErrorMesage)
 					}
@@ -232,12 +232,12 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-c
 				}
 
 				channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
-				Printfln("GetCommentsGetObviouslyRelatedChannelsOverviewOverview#%d filling complete.", i)
+				Printfln("GetCommentsGetObviouslyRelatedChannelsOverviewOverview#%d filling complete.", index)
 				Printfln("Result: %+v", channelMetaInfo)
 				fmt.Println("Sending result to GetObviouslyRelatedChannelsOverview...")
 				outChannel <- channelMetaInfo
 				fmt.Println("Result successfully sent to GetObviouslyRelatedChannelsOverviewChannel")
-			}(commentatorChannelID)
+			}(i, commentatorChannelID)
 			//Printfln("Ending goroutine in GetCommGetObviouslyRelatedChannelsOverviewentsOverview#%d", i)
 		}
 	}()
