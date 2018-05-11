@@ -39,12 +39,16 @@ func CountOccurrences(stringSlice []string) map[string]int {
 	return elementToFrequencyMap
 }
 
-// AnaliseChannelMetaInfo prints additional information for a given channelMetaInfo.
-func AnaliseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
+// AnalyseChannelMetaInfo prints additional information for a given channelMetaInfo.
+func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
 
 	relatedChannelIDToNumberOfOccurrences := CountOccurrences(channelMetaInfo.ObviouslyRelatedChannelIDs)
 
-	for key, value := range relatedChannelIDToNumberOfOccurrences {
-		log.Println(fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", key, value))
+	if len(relatedChannelIDToNumberOfOccurrences) == 0 {
+		log.Println("Package to analyse has no ObviouslyRelatedChannelIDs to count.")
+	} else {
+		for key, value := range relatedChannelIDToNumberOfOccurrences {
+			log.Println(fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", key, value))
+		}
 	}
 }
