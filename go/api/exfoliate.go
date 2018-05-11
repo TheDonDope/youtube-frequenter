@@ -20,8 +20,8 @@ import (
 // - ViewCount
 func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
-		fmt.Println("<<<<<Begin GetChannelOverview Go Routine")
-		defer fmt.Println("End GetChannelOverview Go Routine>>>>>")
+		log.Println("<<<<<Begin GetChannelOverview Go Routine")
+		defer log.Println("End GetChannelOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
 			if channelMetaInfo.NextOperation == "GetChannelOverview" {
@@ -84,8 +84,8 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 // GetVideoIDsOverview gets all videos.
 func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
-		fmt.Println("<<<<<Begin GetVideoIDsOverview Go Routine")
-		defer fmt.Println("End GetVideoIDsOverview Go Routine>>>>>")
+		log.Println("<<<<<Begin GetVideoIDsOverview Go Routine")
+		defer log.Println("End GetVideoIDsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
 			if channelMetaInfo.NextOperation == "GetVideoIDsOverview" {
@@ -119,8 +119,8 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 // GetCommentsOverview foo
 func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
-		fmt.Println("<<<<<Begin GetCommentsOverview Go Routine")
-		defer fmt.Println("End GetCommentsOverview Go Routine>>>>>")
+		log.Println("<<<<<Begin GetCommentsOverview Go Routine")
+		defer log.Println("End GetCommentsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
 			if channelMetaInfo.NextOperation == "GetCommentsOverview" {
@@ -165,8 +165,8 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 // GetObviouslyRelatedChannelsOverview gets the related channels for a YouTube channel
 func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
 	go func() {
-		fmt.Println("<<<<<Begin GetObviouslyRelatedChannelsOverview Go Routine")
-		defer fmt.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
+		log.Println("<<<<<Begin GetObviouslyRelatedChannelsOverview Go Routine")
+		defer log.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
 			if channelMetaInfo.NextOperation == "GetObviouslyRelatedChannelsOverview" {
@@ -240,7 +240,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	GetCommentsOverview(service, monoChannel)
 	GetObviouslyRelatedChannelsOverview(service, monoChannel)
 
-	timeout := time.After(30 * time.Second)
+	timeout := time.After(300 * time.Second)
 	// time.Sleep(time.Second)
 
 	for {
@@ -252,7 +252,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 			}
 			monoChannel <- channelMetaInfo
 		case <-timeout:
-			fmt.Println("Initial Request timed out (10sec)")
+			log.Println("Initial Request timed out (10sec)")
 			return channelMetaInfo
 		}
 	}

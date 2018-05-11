@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"log"
 )
 
 // GetFormattedErrorMessage returns a formatted error message for the given
@@ -18,7 +19,7 @@ func GetFormattedErrorMessage(errorToHandle error, errorMessage string) string {
 
 // Printfln prints a line with a formatted string.
 func Printfln(format string, a ...interface{}) {
-	fmt.Println(fmt.Sprintf(format, a))
+	log.Println(fmt.Sprintf(format, a))
 }
 
 // CountOccurrences returns a map with the string value as key, and the number of occurences as value.
@@ -44,6 +45,6 @@ func AnaliseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
 	relatedChannelIDToNumberOfOccurrences := CountOccurrences(channelMetaInfo.ObviouslyRelatedChannelIDs)
 
 	for key, value := range relatedChannelIDToNumberOfOccurrences {
-		fmt.Println(fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", key, value))
+		log.Println(fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", key, value))
 	}
 }
