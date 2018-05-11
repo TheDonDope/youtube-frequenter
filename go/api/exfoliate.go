@@ -81,6 +81,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 				channelMetaInfo.NextOperation = "GetVideoIDsOverview"
 			}
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
+			log.Println("-> (1/5): GetChannelOverview")
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -118,6 +119,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 
 			}
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
+			log.Println("-> (2/5): GetVideoIDsOverview")
 			monoChannel <- channelMetaInfo
 			return
 		}
@@ -164,6 +166,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				}
 			}
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
+			log.Println("-> (3/5): GetCommentsOverview")
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -231,6 +234,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 				}
 			}
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
+			log.Println("-> (4/5): GetObviouslyRelatedChannelsOverview")
 			monoChannel <- channelMetaInfo
 		}
 	}()
