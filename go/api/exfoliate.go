@@ -10,6 +10,11 @@ import (
 	"google.golang.org/api/youtube/v3"
 )
 
+var (
+	// SleepTime is the time of sleep between each things
+	SleepTime = 500
+)
+
 // GetChannelOverview implements a Search which fills the most basic info about a channel.
 // To use the method simply pass a ChannelMetaInfo with either the ChannelID or CustomURL set.
 // On search completion the following attributes will be filled, if not already set:
@@ -25,6 +30,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 		defer log.Println("End GetChannelOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
+			log.Println("GetChannelOverview hat sich was rausgenommen")
 			if channelMetaInfo.NextOperation == "GetChannelOverview" {
 
 				call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
@@ -74,7 +80,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 
 				channelMetaInfo.NextOperation = "GetVideoIDsOverview"
 			}
-			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -88,6 +94,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 		defer log.Println("End GetVideoIDsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
+			log.Println("GetVideoIDsOverview hat sich was rausgenommen")
 			if channelMetaInfo.NextOperation == "GetVideoIDsOverview" {
 				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
 
@@ -110,7 +117,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				channelMetaInfo.NextOperation = "GetCommentsOverview"
 
 			}
-			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 			return
 		}
@@ -124,6 +131,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 		defer log.Println("End GetCommentsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
+			log.Println("GetCommentsOverview hat sich was rausgenommen")
 			if channelMetaInfo.NextOperation == "GetCommentsOverview" {
 
 				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
@@ -155,7 +163,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 					}(i, video)
 				}
 			}
-			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -168,6 +176,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 		defer log.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
+			log.Println("GetObviouslyRelatedChannelsOverview hat sich was rausgenommen")
 			if channelMetaInfo.NextOperation == "GetObviouslyRelatedChannelsOverview" {
 				for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
 					go func(index int, inputCommentatorChannelID string) {
@@ -221,7 +230,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 					}(i, commentatorChannelID)
 				}
 			}
-			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
+			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -245,6 +254,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	for {
 		select {
 		case channelMetaInfo = <-monoChannel:
+			log.Println("Exfoliator hat sich was rausgenommen")
 			if channelMetaInfo.NextOperation == "None" {
 				Printfln("Done #relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
 				return channelMetaInfo
@@ -275,5 +285,4 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	// 		return channelMetaInfo
 	// 	}
 	// }
-	return channelMetaInfo
 }
