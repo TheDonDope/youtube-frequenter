@@ -133,11 +133,11 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 				Printfln("Starting goroutine GetCommentsOverview#%d", i)
 
 				//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
-				call := service.CommentThreads.List("snippet").VideoId(video.VideoID)
+				call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID)
 
 				response, responseError := call.Do()
 
-				formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", i, video.VideoID))
+				formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", i, inputVideo.VideoID))
 				if formattdErrorMessage != "" {
 					log.Fatal(formattdErrorMessage)
 				}
