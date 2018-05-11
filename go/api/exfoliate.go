@@ -12,7 +12,7 @@ import (
 
 var (
 	// SleepTime is the time of sleep between each things
-	SleepTime = 500
+	SleepTime = 1000
 )
 
 // GetChannelOverview implements a Search which fills the most basic info about a channel.
