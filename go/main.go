@@ -13,7 +13,7 @@ import (
 var opts struct {
 	ChannelID string `short:"i" long:"channel-id" description:"The channel ID of a YouTube Channel"`
 
-	CustomURL string `short:"u" long:"custom-url" description:"The custom URL of a YouTube Channel"`
+	CustomURL string `short:"u" long:"custom-url" description:"The custom URL of a YouTube Channel" required:"true"`
 
 	PlaylistName string `short:"n" long:"playlist-name" description:"The name of the playlist to search. Currently only supports the following playlists: uploads, favorites"`
 }
