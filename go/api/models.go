@@ -29,4 +29,5 @@ type ChannelMetaInfo struct {
 	Playlists                  map[string]*Playlist
 	CommentAuthorChannelIDs    []string
 	ObviouslyRelatedChannelIDs []string
+	NextOperation              string
 }
