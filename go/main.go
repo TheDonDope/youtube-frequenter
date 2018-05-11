@@ -7,7 +7,7 @@ import (
 
 	"github.com/jessevdk/go-flags"
 
-	"github.com/TheDonDope/youtube-tinfoil-expose/go/service"
+	"github.com/TheDonDope/youtube-tinfoil-expose/go/api"
 )
 
 var opts struct {
@@ -27,12 +27,12 @@ func main() {
 		panic(argsError)
 	}
 
-	youtubeService, serviceError := service.GetYouTubeService()
-	service.HandleError(serviceError, "Error creating YouTube client")
-	channelMetaInfo := service.ChannelMetaInfo{}
+	youtubeService, serviceError := api.GetYouTubeService()
+	api.HandleError(serviceError, "Error creating YouTube client")
+	channelMetaInfo := api.ChannelMetaInfo{}
 	channelMetaInfo.CustomURL = opts.CustomURL
 	fmt.Println(fmt.Sprintf("Initial input channelMetaInfo: %+v", channelMetaInfo))
-	results := service.Exfoliator(youtubeService, channelMetaInfo)
+	results := api.Exfoliator(youtubeService, channelMetaInfo)
 	fmt.Println(fmt.Sprintf("Exfoliator exfoliated successfully. Results: %+v", results))
 	elapsed := time.Since(start)
 	fmt.Println(fmt.Sprintf("Finishing youtube-tinfoil-expose @ %v. Overall time spent: %v ms.", time.Now().Format(time.RFC3339), elapsed))

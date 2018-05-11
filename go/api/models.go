@@ -1,6 +1,4 @@
-package service
-
-import youtube "google.golang.org/api/youtube/v3"
+package api
 
 // Comment information for a YouTube video
 type Comment struct {
@@ -30,6 +28,3 @@ type ChannelMetaInfo struct {
 	ViewCount       uint64
 	Playlists       map[string]Playlist
 }
-
-// Search calls the YouTube API
-type Search func(service *youtube.Service, channelMetaInfoChannel chan ChannelMetaInfo)
