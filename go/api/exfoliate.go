@@ -125,12 +125,14 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 				call := service.CommentThreads.List("snippet").VideoId(video.VideoID)
 
 				response, responseError := call.Do()
-				HandleError(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error!", i))
+				HandleError(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! "+video.VideoID, i))
 
 				var comments []*Comment
-				Printfln("!!!!!!!!!!!!!!!!!!!!!!")
 				for _, item := range response.Items {
-					comment := &Comment{CommentID: item.Snippet.TopLevelComment.Id, AuthorChannelID: item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(string)}
+					comment := new(Comment)
+					comment.CommentID = item.Snippet.TopLevelComment.Id
+					comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(string)
+
 					comments = append(comments, comment)
 					Printfln("Appended comment: %v to video: %v", comment, video)
 					Printfln("video.Comments now: %+v", video.Comments)
