@@ -81,7 +81,7 @@ func getTokenFromFile(filePath string) (*oauth2.Token, error) {
 // It returns the retrieved Token.
 func getTokenFromWeb(oauth2Configuration *oauth2.Config) *oauth2.Token {
 	authURL := oauth2Configuration.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	fmt.Printf("Go to the following link in your browser then type the "+
+	Printfln("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
 
 	var code string
@@ -97,7 +97,7 @@ func getTokenFromWeb(oauth2Configuration *oauth2.Config) *oauth2.Token {
 }
 
 func saveToken(file string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", file)
+	Printfln("Saving credential file to: %s\n", file)
 	openedFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)

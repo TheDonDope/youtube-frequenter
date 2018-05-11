@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -20,7 +19,7 @@ var opts struct {
 
 func main() {
 	start := time.Now()
-	fmt.Println(fmt.Sprintf("Starting youtube-tinfoil-expose @ %v", start.Format(time.RFC3339)))
+	api.Printfln("Starting youtube-tinfoil-expose @ %v", start.Format(time.RFC3339))
 
 	_, argsError := flags.ParseArgs(&opts, os.Args)
 	if argsError != nil {
@@ -31,9 +30,9 @@ func main() {
 	api.HandleError(serviceError, "Error creating YouTube client")
 	channelMetaInfo := api.ChannelMetaInfo{}
 	channelMetaInfo.CustomURL = opts.CustomURL
-	fmt.Println(fmt.Sprintf("Initial input channelMetaInfo: %+v", channelMetaInfo))
+	api.Printfln("Initial input channelMetaInfo: %+v", channelMetaInfo)
 	results := api.Exfoliator(youtubeService, channelMetaInfo)
-	fmt.Println(fmt.Sprintf("Exfoliator exfoliated successfully. Results: %+v", results))
+	api.Printfln("Exfoliator exfoliated successfully. Results: %+v", results)
 	elapsed := time.Since(start)
-	fmt.Println(fmt.Sprintf("Finishing youtube-tinfoil-expose @ %v. Overall time spent: %v ms.", time.Now().Format(time.RFC3339), elapsed))
+	api.Printfln("Finishing youtube-tinfoil-expose @ %v. Overall time spent: %v ms.", time.Now().Format(time.RFC3339), elapsed)
 }
