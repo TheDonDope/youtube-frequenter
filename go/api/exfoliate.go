@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"strings"
 	"time"
 
@@ -73,6 +74,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 
 				channelMetaInfo.NextOperation = "GetVideoIDsOverview"
 			}
+			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -106,8 +108,11 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				uploadPlaylist := channelMetaInfo.Playlists["uploads"]
 				uploadPlaylist.PlaylistItems = videos
 				channelMetaInfo.NextOperation = "GetCommentsOverview"
+
 			}
+			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
+			return
 		}
 	}()
 }
@@ -150,6 +155,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 					}(i, video)
 				}
 			}
+			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -215,6 +221,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 					}(i, commentatorChannelID)
 				}
 			}
+			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 		}
 	}()
@@ -232,7 +239,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	GetCommentsOverview(service, monoChannel)
 	GetObviouslyRelatedChannelsOverview(service, monoChannel)
 
-	timeout := time.After(20 * time.Second)
+	timeout := time.After(60 * time.Second)
 	// time.Sleep(time.Second)
 
 	for {
@@ -242,6 +249,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 				Printfln("Done #relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
 				return channelMetaInfo
 			}
+			time.Sleep(time.Duration(rand.Intn(100)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
 		case <-timeout:
 			log.Println("Initial Request timed out (10sec)")
