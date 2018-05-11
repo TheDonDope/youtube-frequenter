@@ -164,7 +164,7 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 
 				inputVideo.Comments = comments
 				//Printfln("GetCommentsOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
-				fmt.Println("Sending result to getCommentsOverviewOutChannel...")
+				// fmt.Println("Sending result to getCommentsOverviewOutChannel...")
 				outChannel <- channelMetaInfo
 				fmt.Println("Result successfully sent to getCommentsOverviewOutChannel")
 			}(i, video)
