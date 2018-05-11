@@ -27,7 +27,7 @@ func GetYouTubeService() (*youtube.Service, error) {
 		log.Fatalf("Unable to read client secret file: %v", readError)
 	}
 
-	configFromJSON, configError := google.ConfigFromJSON(readBytes, youtube.YoutubeReadonlyScope)
+	configFromJSON, configError := google.ConfigFromJSON(readBytes, youtube.YoutubeForceSslScope)
 	if configError != nil {
 		log.Fatalf("Unable to parse client secret file to config: %v", configError)
 	}
