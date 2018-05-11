@@ -174,6 +174,57 @@ func GetCommentsOverview(service *youtube.Service, inChannel <-chan ChannelMetaI
 	return outChannel
 }
 
+// GetObviouslyRelatedChannelsOverview foo
+func GetObviouslyRelatedChannelsOverview(service *youtube.Service, inChannel <-chan ChannelMetaInfo) <-chan ChannelMetaInfo {
+	fmt.Println("Begin GetObviouslyRelatedChannelsOverview")
+	outChannel := make(chan ChannelMetaInfo)
+	channelMetaInfo := <-inChannel
+	go func() {
+		for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
+			go func(inputCommentatorChannelID string) {
+				Printfln("Starting goroutine GetObviouslyRelatedChannelsOverview#%d", i)
+
+				//Printfln("Input channelMetaInfo: %+v", channelMetaInfo)
+				call := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
+
+				allPlaylistsResponse, allPlaylistsResponseError := call.Do()
+
+				if allPlaylistsResponseError != nil {
+					formattdErrorMessage := GetFormattedErrorMessage(allPlaylistsResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", i))
+					if formattdErrorMessage != "" {
+						log.Println(formattdErrorMessage)
+					}
+					return
+				}
+
+				// ObviouslyRelatedChannelIDs
+				/*
+					var comments []*Comment
+					for _, item := range allPlaylistsResponse.Items {
+						comment := new(Comment)
+						comment.CommentID = item.Snippet.TopLevelComment.Id
+						comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
+						channelMetaInfo.CommentAuthorChannelIDs = append(channelMetaInfo.CommentAuthorChannelIDs, comment.AuthorChannelID)
+
+						comments = append(comments, comment)
+						Printfln("Appended comment: %v to video: %v", comment, video)
+						Printfln("video.Comments now: %+v", video.Comments)
+					}
+				*/
+
+				channelMetaInfo.ObviouslyRelatedChannelIDs = comments
+				Printfln("GetCommentsOverview#%d filling complete. Result: %+v", i, channelMetaInfo)
+				fmt.Println("Sending result to getCommentsOverviewOutChannel...")
+				outChannel <- channelMetaInfo
+				fmt.Println("Result successfully sent to getCommentsOverviewOutChannel")
+			}(commentatorChannelID)
+			Printfln("Ending goroutine in GetCommentsOverview#%d", i)
+		}
+	}()
+	fmt.Println("End GetCommentsOverview. Returning getCommentsOverviewOutChannel.")
+	return outChannel
+}
+
 // Exfoliator exfoliates
 func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
 	initialInChannel := make(chan ChannelMetaInfo)
@@ -184,10 +235,11 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	getChannelOverviewOutChannel := GetChannelOverview(service, initialInChannel)
 	getVideoIDsOverviewOutChannel := GetVideoIDsOverview(service, getChannelOverviewOutChannel)
 	getCommentsOverviewOutChannel := GetCommentsOverview(service, getVideoIDsOverviewOutChannel)
+	getObviouslyRelatedChannelsOverviewChannel := GetObviouslyRelatedChannelsOverview(service, getCommentsOverviewOutChannel)
 	timeout := time.After(10 * time.Second)
 	// time.Sleep(time.Second)
 	select {
-	case channelMetaInfo = <-getCommentsOverviewOutChannel:
+	case channelMetaInfo = <-getObviouslyRelatedChannelsOverviewChannel:
 		Printfln("Got %+v from getCommentsOverviewOutChannel", channelMetaInfo)
 	case <-timeout:
 		fmt.Println("Request timed out...")
