@@ -243,12 +243,12 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	go func() {
 		monoChannel <- channelMetaInfo
 	}()
-	GetChannelOverview(service, monoChannel)
-	GetVideoIDsOverview(service, monoChannel)
-	GetCommentsOverview(service, monoChannel)
-	GetObviouslyRelatedChannelsOverview(service, monoChannel)
+	go GetChannelOverview(service, monoChannel)
+	go GetVideoIDsOverview(service, monoChannel)
+	go GetCommentsOverview(service, monoChannel)
+	go GetObviouslyRelatedChannelsOverview(service, monoChannel)
 
-	timeout := time.After(60 * time.Second)
+	timeout := time.After(30 * time.Second)
 	// time.Sleep(time.Second)
 
 	for {
@@ -256,11 +256,10 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 		case channelMetaInfo = <-monoChannel:
 			log.Println("<- (5/5): Exfoliator")
 			if channelMetaInfo.NextOperation == "None" {
-				Printfln("Done #relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
 				return channelMetaInfo
 			}
-			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 			monoChannel <- channelMetaInfo
+			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		case <-timeout:
 			log.Println("Initial Request timed out (10sec)")
 			return channelMetaInfo
