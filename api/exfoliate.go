@@ -3,16 +3,10 @@ package api
 import (
 	"fmt"
 	"log"
-	"math/rand"
 	"strings"
 	"time"
 
 	"google.golang.org/api/youtube/v3"
-)
-
-var (
-	// SleepTime is the time of sleep between each things
-	SleepTime = 10
 )
 
 // GetChannelOverview implements a Search which fills the most basic info about a channel.
@@ -86,7 +80,6 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 				monoChannel <- channelMetaInfo
 				log.Println("--> (1/5): Sendubg out from GetChannelOverview")
 			}
-			time.Sleep(time.Duration(rand.Intn(5*SleepTime)) * time.Millisecond)
 		}
 	}()
 
@@ -128,7 +121,6 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				monoChannel <- channelMetaInfo
 				log.Println("--> (2/5): Sending out from GetVideoIDsOverview")
 			}
-			time.Sleep(time.Duration(rand.Intn(2*SleepTime)) * time.Millisecond)
 		}
 	}()
 }
@@ -177,7 +169,6 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				monoChannel <- channelMetaInfo
 				log.Println("--> (3/5): Sending out from GetCommentsOverview")
 			}
-			time.Sleep(time.Duration(rand.Intn(2*SleepTime)) * time.Millisecond)
 		}
 	}()
 }
@@ -257,7 +248,6 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 				monoChannel <- channelMetaInfo
 				log.Println("--> (4/5): Sending out from GetObviouslyRelatedChannelsOverview to monoChannel")
 			}
-			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		}
 	}()
 }
@@ -278,18 +268,16 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	go GetObviouslyRelatedChannelsOverview(service, monoChannel, lastButNotLeastChannel)
 
 	timeout := time.After(3 * 60 * time.Second)
-	// time.Sleep(time.Second)
 
 	for {
-		log.Println("<<<<<Begin Exfoliator Go Routine")
+		log.Println("<<<<<Begin Exfoliator Main Loop")
 		select {
 		case channelMetaInfo = <-lastButNotLeastChannel:
 			log.Println("<-- (5/5): Exfoliator")
-			log.Println("<-> (5/5): Working on Exfoliator ++++++")
+			log.Println("<-> (5/5): Working in Exfoliator")
 			// evtl die anderen properties adden
 			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
 			log.Println("--> (5/5): Exfoliator")
-			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		case <-timeout:
 			log.Println("Request timed out (30 sec)")
 			return accumulatedMetaInfo
@@ -298,7 +286,6 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 
 	// // check for unused channelMetaInfo
 	// timeoutAfter := time.After(5 * time.Second)
-	// // time.Sleep(time.Second)
 	// for i := 0; i < 10000; i++ {
 	// 	select {
 	// 	case channelMetaInfo = <-getChannelOverviewOutChannel:
