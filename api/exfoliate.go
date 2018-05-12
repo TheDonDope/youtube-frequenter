@@ -183,7 +183,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 }
 
 // GetObviouslyRelatedChannelsOverview gets the related channels for a YouTube channel
-func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
+func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo, lastButNotLeastChannel chan ChannelMetaInfo) {
 	go func() {
 		log.Println("<<<<<Begin GetObviouslyRelatedChannelsOverview Go Routine")
 		defer log.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
@@ -204,10 +204,10 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 							}
 							return
 						}
-
+						log.Println("->> (4/5)?: GetObviouslyRelatedChannelsOverview")
 						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites).MaxResults(50)
 						getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
-
+						log.Println("->> (4/5)!!: GetObviouslyRelatedChannelsOverview")
 						if getPlaylistItemsResponseError != nil {
 							formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 							if formattedErrorMesage != "" {
@@ -239,9 +239,11 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						}
 
 						channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
-						channelMetaInfo.NextOperation = NoOperation
-						monoChannel <- channelMetaInfo
+						// channelMetaInfo.NextOperation = NoOperation
+						log.Println("->> (4/5): GetObviouslyRelatedChannelsOverview")
+						lastButNotLeastChannel <- channelMetaInfo
 						log.Println("--> (4/5): GetObviouslyRelatedChannelsOverview")
+
 					}(i, commentatorChannelID)
 				}
 			} else {
@@ -257,33 +259,32 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 // Exfoliator exfoliates
 func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
 	monoChannel := make(chan ChannelMetaInfo)
+	lastButNotLeastChannel := make(chan ChannelMetaInfo)
 	channelMetaInfo.NextOperation = GetChannelOverviewOperation
+	accumulatedMetaInfo := ChannelMetaInfo{}
 	go func() {
 		monoChannel <- channelMetaInfo
 	}()
 	go GetChannelOverview(service, monoChannel)
 	go GetVideoIDsOverview(service, monoChannel)
 	go GetCommentsOverview(service, monoChannel)
-	go GetObviouslyRelatedChannelsOverview(service, monoChannel)
+	go GetObviouslyRelatedChannelsOverview(service, monoChannel, lastButNotLeastChannel)
 
-	timeout := time.After(30 * time.Second)
+	timeout := time.After(5 * 60 * time.Second)
 	// time.Sleep(time.Second)
 
 	for {
+		log.Println("<<<<<Begin Exfoliator Go Routine")
 		select {
-		case channelMetaInfo = <-monoChannel:
+		case channelMetaInfo = <-lastButNotLeastChannel:
 			log.Println("<-- (5/5): Exfoliator")
-			if channelMetaInfo.NextOperation == NoOperation {
-				log.Println("<-> (5/5): Working on Exfoliator ++++++")
-				return channelMetaInfo
-			}
-			log.Println("x-x (5/5): NOT Working on Exfoliator")
-			monoChannel <- channelMetaInfo
+			log.Println("<-> (5/5): Working on Exfoliator ++++++")
+			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
 			log.Println("--> (5/5): Exfoliator")
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		case <-timeout:
 			log.Println("Request timed out (30 sec)")
-			return channelMetaInfo
+			return accumulatedMetaInfo
 		}
 	}
 
