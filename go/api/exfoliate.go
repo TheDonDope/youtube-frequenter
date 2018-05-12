@@ -31,7 +31,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 		for {
 			channelMetaInfo := <-monoChannel
 			log.Println("<-- (1/5): GetChannelOverview")
-			if channelMetaInfo.NextOperation == "GetChannelOverview" {
+			if channelMetaInfo.NextOperation == GetChannelOverviewOperation {
 				log.Println("<-> (1/5): Working on GetChannelOverview")
 				call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
 
@@ -78,7 +78,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 					channelMetaInfo.ViewCount = firstItem.Statistics.ViewCount
 				}
 
-				channelMetaInfo.NextOperation = "GetVideoIDsOverview"
+				channelMetaInfo.NextOperation = GetVideoIDsOverviewOperation
 			} else {
 				log.Println("x-x (1/5): NOT Working on GetChannelOverview")
 			}
@@ -98,7 +98,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 		for {
 			channelMetaInfo := <-monoChannel
 			log.Println("<-- (2/5): GetVideoIDsOverview")
-			if channelMetaInfo.NextOperation == "GetVideoIDsOverview" {
+			if channelMetaInfo.NextOperation == GetVideoIDsOverviewOperation {
 				log.Println("<-> (2/5): Working on GetVideoIDsOverview")
 				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
 
@@ -118,7 +118,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 
 				uploadPlaylist := channelMetaInfo.Playlists["uploads"]
 				uploadPlaylist.PlaylistItems = videos
-				channelMetaInfo.NextOperation = "GetCommentsOverview"
+				channelMetaInfo.NextOperation = GetCommentsOverviewOperation
 
 			} else {
 				log.Println("x-x (2/5): NOT Working on GetVideoIDsOverview")
@@ -138,7 +138,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 		for {
 			channelMetaInfo := <-monoChannel
 			log.Println("<-- (3/5): GetCommentsOverview")
-			if channelMetaInfo.NextOperation == "GetCommentsOverview" {
+			if channelMetaInfo.NextOperation == GetCommentsOverviewOperation {
 				log.Println("<-> (3/5): Working on GetCommentsOverview")
 				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
 					go func(index int, inputVideo *Video) {
@@ -165,7 +165,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 						}
 
 						inputVideo.Comments = comments
-						channelMetaInfo.NextOperation = "GetObviouslyRelatedChannelsOverview"
+						channelMetaInfo.NextOperation = GetObviouslyRelatedChannelsOverviewOperation
 					}(i, video)
 				}
 			} else {
@@ -186,7 +186,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 		for {
 			channelMetaInfo := <-monoChannel
 			log.Println("<-- (4/5): GetObviouslyRelatedChannelsOverview")
-			if channelMetaInfo.NextOperation == "GetObviouslyRelatedChannelsOverview" {
+			if channelMetaInfo.NextOperation == GetObviouslyRelatedChannelsOverviewOperation {
 				log.Println("<-> (4/5): Working on GetObviouslyRelatedChannelsOverview")
 				for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
 					go func(index int, inputCommentatorChannelID string) {
@@ -235,7 +235,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						}
 
 						channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
-						channelMetaInfo.NextOperation = "None"
+						channelMetaInfo.NextOperation = NoOperation
 
 					}(i, commentatorChannelID)
 				}
@@ -252,7 +252,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 // Exfoliator exfoliates
 func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
 	monoChannel := make(chan ChannelMetaInfo)
-	channelMetaInfo.NextOperation = "GetChannelOverview"
+	channelMetaInfo.NextOperation = GetChannelOverviewOperation
 	go func() {
 		monoChannel <- channelMetaInfo
 	}()
@@ -268,7 +268,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 		select {
 		case channelMetaInfo = <-monoChannel:
 			log.Println("<-- (5/5): Exfoliator")
-			if channelMetaInfo.NextOperation == "None" {
+			if channelMetaInfo.NextOperation == NoOperation {
 				log.Println("<-> (5/5): Working on Exfoliator ++++++")
 				return channelMetaInfo
 			}

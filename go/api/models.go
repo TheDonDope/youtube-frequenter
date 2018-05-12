@@ -29,5 +29,21 @@ type ChannelMetaInfo struct {
 	Playlists                  map[string]*Playlist
 	CommentAuthorChannelIDs    []string
 	ObviouslyRelatedChannelIDs []string
-	NextOperation              string
+	NextOperation              NextOperation
 }
+
+// NextOperation declares an enum type for operation names
+type NextOperation int
+
+const (
+	// GetChannelOverviewOperation is a NextOperation enum value
+	GetChannelOverviewOperation NextOperation = iota
+	// GetVideoIDsOverviewOperation is a NextOperation enum value
+	GetVideoIDsOverviewOperation
+	// GetCommentsOverviewOperation is a NextOperation enum value
+	GetCommentsOverviewOperation
+	// GetObviouslyRelatedChannelsOverviewOperation is a NextOperation enum value
+	GetObviouslyRelatedChannelsOverviewOperation
+	// NoOperation is a NextOperation enum value
+	NoOperation
+)
