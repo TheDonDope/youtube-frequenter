@@ -126,7 +126,6 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 			log.Println("--> (2/5): GetVideoIDsOverview")
 			monoChannel <- channelMetaInfo
 			time.Sleep(time.Duration(rand.Intn(2*SleepTime)) * time.Millisecond)
-			return
 		}
 	}()
 }
@@ -270,11 +269,11 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 		case channelMetaInfo = <-monoChannel:
 			log.Println("<-- (5/5): Exfoliator")
 			if channelMetaInfo.NextOperation == "None" {
-				log.Println("<-> (5/5): Working on Exfoliator")
+				log.Println("<-> (5/5): Working on Exfoliator ++++++")
 				return channelMetaInfo
-			} else {
-				log.Println("x-x (5/5): NOT Working on Exfoliator")
 			}
+			log.Println("x-x (5/5): NOT Working on Exfoliator")
+			log.Println("--> (5/5): Exfoliator")
 			monoChannel <- channelMetaInfo
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		case <-timeout:
