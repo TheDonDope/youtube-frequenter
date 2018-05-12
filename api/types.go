@@ -1,37 +1,5 @@
 package api
 
-// Comment is the struct for information on comments
-type Comment struct {
-	CommentID       string
-	AuthorChannelID string
-}
-
-// Video is the struct for information on videos
-type Video struct {
-	VideoID           string
-	UploaderChannelID string
-	Comments          []*Comment
-}
-
-// Playlist is the struct for information on playlists
-type Playlist struct {
-	PlaylistID    string
-	PlaylistItems []*Video
-}
-
-// ChannelMetaInfo is the struct for information YouTube channels
-type ChannelMetaInfo struct {
-	ChannelID                  string
-	ChannelName                string
-	CustomURL                  string
-	SubscriberCount            uint64
-	ViewCount                  uint64
-	Playlists                  map[string]*Playlist
-	CommentAuthorChannelIDs    []string
-	ObviouslyRelatedChannelIDs []string
-	NextOperation              NextOperation
-}
-
 // NextOperation declares an enum type for operation names
 type NextOperation int
 
@@ -62,4 +30,36 @@ func (operation NextOperation) String() string {
 	}
 
 	return operationNames[operation]
+}
+
+// Comment is the struct for information on comments
+type Comment struct {
+	CommentID       string
+	AuthorChannelID string
+}
+
+// Video is the struct for information on videos
+type Video struct {
+	VideoID           string
+	UploaderChannelID string
+	Comments          []*Comment
+}
+
+// Playlist is the struct for information on playlists
+type Playlist struct {
+	PlaylistID    string
+	PlaylistItems []*Video
+}
+
+// ChannelMetaInfo is the struct for information YouTube channels
+type ChannelMetaInfo struct {
+	ChannelID                  string
+	ChannelName                string
+	CustomURL                  string
+	SubscriberCount            uint64
+	ViewCount                  uint64
+	Playlists                  map[string]*Playlist
+	CommentAuthorChannelIDs    []string
+	ObviouslyRelatedChannelIDs []string
+	NextOperation              NextOperation
 }
