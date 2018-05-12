@@ -35,7 +35,7 @@ func main() {
 	}
 	logFileName = logFileName + ".log"
 	os.MkdirAll("logs", 0700)
-	logFile, logFileError := os.OpenFile("logs/"+logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	logFile, logFileError := os.OpenFile("logs/"+logFileName, os.O_WRONLY|os.O_CREATE, 0644)
 	if logFileError != nil {
 		log.Fatal(logFileError)
 	}

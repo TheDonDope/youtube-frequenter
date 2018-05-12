@@ -5,10 +5,10 @@ import "time"
 const (
 
 	// MaxResultsUploadedVideos is the maximum search result number for the initial PlaylistItems.List call for the uploaded playlist (0 - 50, default if not set: 5)
-	MaxResultsUploadedVideos = 50
+	MaxResultsUploadedVideos = 25
 
 	// MaxResultsCommentPerVideo is the maximum search result number for the comments per video to be searched (0 - 100, default if not set: 20)
-	MaxResultsCommentPerVideo = 100
+	MaxResultsCommentPerVideo = 50
 
 	// MaxResultsFavouritedVideos is the maximum search result number for the number of playlist items in the favourited playlist (0 - 50, default if not set: 5)
 	MaxResultsFavouritedVideos = 50
