@@ -205,8 +205,12 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 							}
 							return
 						}
-						Printfln("<-> (4/5): (2/3) Begin service.PlaylistItems.List for PlaylistID: %v", getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites)
-						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites).MaxResults(50)
+						favoritesPlaylistID := getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites
+						if favoritesPlaylistID == "" {
+							return
+						}
+						Printfln("<-> (4/5): (2/3) Begin service.PlaylistItems.List for PlaylistID: %v", favoritesPlaylistID)
+						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(favoritesPlaylistID).MaxResults(50)
 						getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 						log.Println("->> (4/5)!!: GetObviouslyRelatedChannelsOverview")
 						Printfln("<-> (4/5): (2/3) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
