@@ -79,11 +79,13 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 				}
 
 				channelMetaInfo.NextOperation = GetVideoIDsOverviewOperation
+				monoChannel <- channelMetaInfo
+				log.Println("--> (1/5): GetChannelOverview")
 			} else {
 				log.Println("x-x (1/5): NOT Working on GetChannelOverview")
+				monoChannel <- channelMetaInfo
+				log.Println("--> (1/5): GetChannelOverview")
 			}
-			log.Println("--> (1/5): GetChannelOverview")
-			monoChannel <- channelMetaInfo
 			time.Sleep(time.Duration(rand.Intn(5*SleepTime)) * time.Millisecond)
 		}
 	}()
@@ -119,12 +121,13 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				uploadPlaylist := channelMetaInfo.Playlists["uploads"]
 				uploadPlaylist.PlaylistItems = videos
 				channelMetaInfo.NextOperation = GetCommentsOverviewOperation
-
+				monoChannel <- channelMetaInfo
+				log.Println("--> (2/5): GetVideoIDsOverview")
 			} else {
 				log.Println("x-x (2/5): NOT Working on GetVideoIDsOverview")
+				monoChannel <- channelMetaInfo
+				log.Println("--> (2/5): GetVideoIDsOverview")
 			}
-			log.Println("--> (2/5): GetVideoIDsOverview")
-			monoChannel <- channelMetaInfo
 			time.Sleep(time.Duration(rand.Intn(2*SleepTime)) * time.Millisecond)
 		}
 	}()
@@ -143,7 +146,6 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
 					go func(index int, inputVideo *Video) {
 						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(100)
-
 						response, responseError := call.Do()
 
 						if responseError != nil {
@@ -166,13 +168,15 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 
 						inputVideo.Comments = comments
 						channelMetaInfo.NextOperation = GetObviouslyRelatedChannelsOverviewOperation
+						monoChannel <- channelMetaInfo
+						log.Println("--> (3/5): GetCommentsOverview")
 					}(i, video)
 				}
 			} else {
 				log.Println("x-x (3/5): NOT Working on GetCommentsOverview")
+				monoChannel <- channelMetaInfo
+				log.Println("--> (3/5): GetCommentsOverview")
 			}
-			log.Println("--> (3/5): GetCommentsOverview")
-			monoChannel <- channelMetaInfo
 			time.Sleep(time.Duration(rand.Intn(2*SleepTime)) * time.Millisecond)
 		}
 	}()
@@ -236,14 +240,15 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 
 						channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
 						channelMetaInfo.NextOperation = NoOperation
-
+						monoChannel <- channelMetaInfo
+						log.Println("--> (4/5): GetObviouslyRelatedChannelsOverview")
 					}(i, commentatorChannelID)
 				}
 			} else {
 				log.Println("x-x (4/5): NOT Working on GetObviouslyRelatedChannelsOverview")
+				monoChannel <- channelMetaInfo
+				log.Println("--> (4/5): GetObviouslyRelatedChannelsOverview")
 			}
-			log.Println("--> (4/5): GetObviouslyRelatedChannelsOverview")
-			monoChannel <- channelMetaInfo
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		}
 	}()
@@ -273,8 +278,8 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 				return channelMetaInfo
 			}
 			log.Println("x-x (5/5): NOT Working on Exfoliator")
-			log.Println("--> (5/5): Exfoliator")
 			monoChannel <- channelMetaInfo
+			log.Println("--> (5/5): Exfoliator")
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		case <-timeout:
 			log.Println("Request timed out (30 sec)")
