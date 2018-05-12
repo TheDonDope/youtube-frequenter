@@ -56,6 +56,10 @@ func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
 			log.Println(jsonError)
 		}
 
+		if _, err := os.Stat("results.json"); err == nil {
+			os.Remove("results.json")
+		}
+
 		jsonFile, jsonFileError := os.OpenFile("results.json", os.O_WRONLY|os.O_CREATE, 0644)
 		defer jsonFile.Close()
 		if jsonFileError != nil {
