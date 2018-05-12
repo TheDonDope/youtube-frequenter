@@ -57,7 +57,7 @@ func main() {
 	channelMetaInfo.CustomURL = opts.CustomURL
 	results := api.Exfoliator(youtubeService, channelMetaInfo)
 	log.Println("Exfoliator exfoliated successfully.")
-	log.Println(fmt.Sprintf("Analysing Exfoliator results (ChannelID: %v, CustomURL: %v", channelMetaInfo.ChannelID, channelMetaInfo.CustomURL))
+	log.Println(fmt.Sprintf("Analysing Exfoliator results (ChannelID: %v, CustomURL: %v)", results.ChannelID, results.CustomURL))
 	api.AnalyseChannelMetaInfo(&results)
 	api.Printfln("Finishing youtube-tinfoil-expose @ %v", time.Now().Format(time.RFC3339))
 	api.Printfln("Overall time spent: %v", time.Since(start))
