@@ -8,11 +8,11 @@ var Opts struct {
 
 	PlaylistID string `short:"p" long:"playlist-id" description:"The id of the playlist to search."`
 
-	MaxResultsUploadedVideos int64 `short:"U" long:"max-results-uploaded-videos" description:"The maximum search result number for the initial PlaylistItems.List call for the uploaded playlist (default: 5, range: 0-50)" default:"5"`
+	MaxResultsUploadedVideos int64 `short:"U" long:"max-results-uploaded-videos" description:"The maximum search result number for the initial PlaylistItems.List call for the uploaded playlist (default: 25, range: 0-50)" default:"25"`
 
-	MaxResultsCommentPerVideo int64 `short:"C" long:"max-results-comments-per-video" description:"The maximum search result number for the comments per video to be searched (default: 20, range: 0-100)" default:"20"`
+	MaxResultsCommentPerVideo int64 `short:"C" long:"max-results-comments-per-video" description:"The maximum search result number for the comments per video to be searched (default: 25, range: 0-100)" default:"25"`
 
-	MaxResultsFavouritedVideos int64 `short:"F" long:"max-results-favourited-videos" description:"The maximum search result number for the number of playlist items in the favourited playlist (default: 5, range: 0-50)" default:"5"`
+	MaxResultsFavouritedVideos int64 `short:"F" long:"max-results-favourited-videos" description:"The maximum search result number for the number of playlist items in the favourited playlist (default: 25, range: 0-50)" default:"25"`
 
 	AverageAPICallDuration string `short:"d" long:"average-api-call-duration" description:"The duration we estimate to average for a single API call (default: 10ms, format: 1h10m10s)" default:"10ms"`
 
