@@ -58,6 +58,7 @@ func main() {
 	results := api.Exfoliator(youtubeService, channelMetaInfo)
 	log.Println("Exfoliator exfoliated successfully.")
 	log.Println(fmt.Sprintf("Analysing Exfoliator results (ChannelID: %v, CustomURL: %v)", results.ChannelID, results.CustomURL))
+	log.Println(fmt.Sprintf("#videos%v", len(results.ObviouslyRelatedChannelIDs)))
 	api.AnalyseChannelMetaInfo(&results)
 	api.Printfln("Finishing youtube-tinfoil-expose @ %v", time.Now().Format(time.RFC3339))
 	api.Printfln("Overall time spent: %v", time.Since(start))
