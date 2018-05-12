@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"os"
 	"time"
@@ -19,6 +20,14 @@ var opts struct {
 }
 
 func main() {
+	//create your file with desired read/write permissions
+	logFile, logFileError := os.OpenFile("exfoliate.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	if logFileError != nil {
+		log.Fatal(logFileError)
+	}
+
+	//set output of logs to f
+	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 	start := time.Now()
 	api.Printfln("Starting youtube-tinfoil-expose @ %v", start.Format(time.RFC3339))
 
@@ -42,4 +51,6 @@ func main() {
 	api.AnalyseChannelMetaInfo(&results)
 	api.Printfln("Finishing youtube-tinfoil-expose @ %v", time.Now().Format(time.RFC3339))
 	api.Printfln("Overall time spent: %v", time.Since(start))
+	//defer to close when you're done with it, not because you think it's idiomatic!
+	defer logFile.Close()
 }
