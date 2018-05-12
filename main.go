@@ -12,26 +12,20 @@ import (
 	"github.com/TheDonDope/youtube-tinfoil-expose/api"
 )
 
-var opts struct {
-	ChannelID string `short:"i" long:"channel-id" description:"The channel ID of a YouTube Channel"`
-
-	CustomURL string `short:"u" long:"custom-url" description:"The custom URL of a YouTube Channel"`
-
-	PlaylistName string `short:"n" long:"playlist-name" description:"The name of the playlist to search. Currently only supports the following playlists: uploads, favorites"`
-}
-
 func main() {
-	_, argsError := flags.ParseArgs(&opts, os.Args)
+	_, argsError := flags.ParseArgs(&api.Opts, os.Args)
 	if argsError != nil {
 		panic(argsError)
 	}
 
 	//create your file with desired read/write permissions
 	var logFileName string
-	if opts.ChannelID != "" {
-		logFileName = "channel-id-" + opts.ChannelID
-	} else if opts.CustomURL != "" {
-		logFileName = "custom-url-" + opts.CustomURL
+	if api.Opts.ChannelID != "" {
+		logFileName = "channel-id-" + api.Opts.ChannelID
+	} else if api.Opts.CustomURL != "" {
+		logFileName = "custom-url-" + api.Opts.CustomURL
+	} else if api.Opts.PlaylistID != "" {
+		logFileName = "playlist-id-" + api.Opts.PlaylistID
 	}
 	logFileName = logFileName + ".log"
 	os.MkdirAll("logs", 0700)
@@ -53,8 +47,17 @@ func main() {
 		}
 	}
 	channelMetaInfo := api.ChannelMetaInfo{}
-	channelMetaInfo.ChannelID = opts.ChannelID
-	channelMetaInfo.CustomURL = opts.CustomURL
+	if api.Opts.PlaylistID == "" {
+		channelMetaInfo.ChannelID = api.Opts.ChannelID
+		channelMetaInfo.CustomURL = api.Opts.CustomURL
+		channelMetaInfo.NextOperation = api.GetChannelOverviewOperation
+	} else {
+		uploadedPlaylist := &api.Playlist{PlaylistID: api.Opts.PlaylistID}
+		channelMetaInfo.Playlists = make(map[string]*api.Playlist)
+		channelMetaInfo.Playlists["uploads"] = uploadedPlaylist
+		channelMetaInfo.NextOperation = api.GetVideoIDsOverviewOperation
+	}
+
 	results := api.Exfoliator(youtubeService, channelMetaInfo)
 	log.Println("Exfoliator exfoliated successfully.")
 	log.Println(fmt.Sprintf("Analysing Exfoliator results (ChannelID: %v, CustomURL: %v)", results.ChannelID, results.CustomURL))
