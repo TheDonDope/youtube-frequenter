@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -20,8 +21,21 @@ var opts struct {
 }
 
 func main() {
+	_, argsError := flags.ParseArgs(&opts, os.Args)
+	if argsError != nil {
+		panic(argsError)
+	}
+
 	//create your file with desired read/write permissions
-	logFile, logFileError := os.OpenFile("exfoliate.log", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+	var logFileName string
+	if opts.ChannelID != "" {
+		logFileName = "channel-id-" + opts.ChannelID
+	} else if opts.CustomURL != "" {
+		logFileName = "custom-url-" + opts.CustomURL
+	}
+	logFileName = logFileName + ".log"
+	os.MkdirAll("logs", 0700)
+	logFile, logFileError := os.OpenFile("logs/"+logFileName, os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
 	if logFileError != nil {
 		log.Fatal(logFileError)
 	}
@@ -30,11 +44,6 @@ func main() {
 	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 	start := time.Now()
 	api.Printfln("Starting youtube-tinfoil-expose @ %v", start.Format(time.RFC3339))
-
-	_, argsError := flags.ParseArgs(&opts, os.Args)
-	if argsError != nil {
-		panic(argsError)
-	}
 
 	youtubeService, serviceError := api.GetYouTubeService()
 	if serviceError != nil {
@@ -48,7 +57,7 @@ func main() {
 	channelMetaInfo.CustomURL = opts.CustomURL
 	results := api.Exfoliator(youtubeService, channelMetaInfo)
 	log.Println("Exfoliator exfoliated successfully.")
-	log.Println("Analysing Exfoliator results:")
+	log.Println(fmt.Sprintf("Analysing Exfoliator results (ChannelID: %v, CustomURL: %v", channelMetaInfo.ChannelID, channelMetaInfo.CustomURL))
 	api.AnalyseChannelMetaInfo(&results)
 	api.Printfln("Finishing youtube-tinfoil-expose @ %v", time.Now().Format(time.RFC3339))
 	api.Printfln("Overall time spent: %v", time.Since(start))
