@@ -23,14 +23,10 @@ func GetYouTubeService() (*youtube.Service, error) {
 	backgroundContext := context.Background()
 
 	readBytes, readError := ioutil.ReadFile("client_secret.json")
-	if readError != nil {
-		log.Fatalf("Unable to read client secret file: %v", readError)
-	}
+	HandleError(readError, fmt.Sprintf("Unable to read client secret file: %v", readError))
 
 	configFromJSON, configError := google.ConfigFromJSON(readBytes, youtube.YoutubeForceSslScope)
-	if configError != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", configError)
-	}
+	HandleError(configError, fmt.Sprintf("Unable to parse client secret file to config: %v", configError))
 	httpClient := getHTTPClient(backgroundContext, configFromJSON)
 
 	return youtube.New(httpClient)
@@ -41,9 +37,7 @@ func GetYouTubeService() (*youtube.Service, error) {
 func getHTTPClient(context context.Context, oauth2Configuration *oauth2.Config) *http.Client {
 
 	cacheFile, cacheFileError := createTokenCacheFile()
-	if cacheFileError != nil {
-		log.Fatalf("Unable to get path to cached credential file. %v", cacheFileError)
-	}
+	HandleError(cacheFileError, fmt.Sprintf("Unable to get path to cached credential file. %v", cacheFileError))
 	token, tokenError := getTokenFromFile(cacheFile)
 	if tokenError != nil {
 		token = getTokenFromWeb(oauth2Configuration)
@@ -90,18 +84,15 @@ func getTokenFromWeb(oauth2Configuration *oauth2.Config) *oauth2.Token {
 	}
 
 	token, tokenError := oauth2Configuration.Exchange(oauth2.NoContext, code)
-	if tokenError != nil {
-		log.Fatalf("Unable to retrieve token from web %v", tokenError)
-	}
+	HandleError(tokenError, fmt.Sprintf("Unable to retrieve token from web %v", tokenError))
+
 	return token
 }
 
 func saveToken(file string, token *oauth2.Token) {
 	Printfln("Saving credential file to: %s\n", file)
 	openedFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	if err != nil {
-		log.Fatalf("Unable to cache oauth token: %v", err)
-	}
+	HandleError(err, fmt.Sprintf("Unable to cache oauth token: %v", err))
 	defer openedFile.Close()
 	json.NewEncoder(openedFile).Encode(token)
 }

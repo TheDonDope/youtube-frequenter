@@ -26,20 +26,9 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 			log.Println("<-- (1/5): Receiving into GetChannelOverview")
 			if channelMetaInfo.NextOperation == GetChannelOverviewOperation {
 				log.Println("<-> (1/5): Working in GetChannelOverview")
-				call := service.Channels.List("contentDetails,snippet,statistics")
-				if channelMetaInfo.CustomURL != "" {
-					call = call.ForUsername(channelMetaInfo.CustomURL)
-				} else if channelMetaInfo.ChannelID != "" {
-					call = call.Id(channelMetaInfo.ChannelID)
-				}
+				response, responseError := ChannelsList(service, channelMetaInfo.ChannelID, channelMetaInfo.CustomURL)
 
-				response, responseError := call.Do()
-				if responseError != nil {
-					formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetChannelOverview Response error!")
-					if formattdErrorMessage != "" {
-						log.Println(formattdErrorMessage)
-					}
-				}
+				HandleError(responseError, "GetChannelOverview Response error!")
 
 				firstItem := response.Items[0]
 
@@ -100,14 +89,9 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 			if channelMetaInfo.NextOperation == GetVideoIDsOverviewOperation {
 				log.Println("<-> (2/5): Working in GetVideoIDsOverview")
 				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(Opts.MaxResultsUploadedVideos)
-
 				response, responseError := call.Do()
-				if responseError != nil {
-					formattdErrorMessage := GetFormattedErrorMessage(responseError, "GetVideoIDsOverview Response error!")
-					if formattdErrorMessage != "" {
-						log.Println(formattdErrorMessage)
-					}
-				}
+
+				HandleError(responseError, "GetVideoIDsOverview Response error!")
 
 				var videos []*Video
 				for _, item := range response.Items {
@@ -144,13 +128,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(Opts.MaxResultsCommentPerVideo)
 						response, responseError := call.Do()
 
-						if responseError != nil {
-							formattdErrorMessage := GetFormattedErrorMessage(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
-							if formattdErrorMessage != "" {
-								log.Println(formattdErrorMessage)
-							}
-							return
-						}
+						HandleError(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
 
 						var comments []*Comment
 						for _, item := range response.Items {
@@ -192,13 +170,9 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						Printfln("<-> (4/5): (#-----) Begin service.Channels.List for ChannelID: %v", inputCommentatorChannelID)
 						getChannelCall := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
 						getChannelResponse, getChannelResponseError := getChannelCall.Do()
-						if getChannelResponseError != nil {
-							formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
-							if formattdErrorMessage != "" {
-								log.Println(formattdErrorMessage)
-							}
-							return
-						}
+
+						HandleError(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
+
 						favoritesPlaylistID := getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites
 						if favoritesPlaylistID == "" {
 							Printfln("<-> (4/5): (#X----) End service.Channels.List (error: %v)", getChannelResponseError)
@@ -209,13 +183,8 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(favoritesPlaylistID).MaxResults(Opts.MaxResultsFavouritedVideos)
 						getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 						Printfln("<-> (4/5): (####--) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
-						if getPlaylistItemsResponseError != nil {
-							formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
-							if formattedErrorMesage != "" {
-								log.Println(formattedErrorMesage)
-							}
-							return
-						}
+
+						HandleError(getPlaylistItemsResponseError, "GetObviouslyRelatedChannelsOverview#%d Response error!")
 
 						var favoritedVideoIDs []string
 						for _, item := range getPlaylistItemsResponse.Items {
@@ -227,13 +196,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						getRelatedChannelResponse, getRelatedChannelResponseError := getRelatedChannelCall.Do()
 						Printfln("<-> (4/5): (######) End service.Videos.List (error: %v)", getRelatedChannelResponseError)
 
-						if getRelatedChannelResponseError != nil {
-							formattedErrorMesage := GetFormattedErrorMessage(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
-							if formattedErrorMesage != "" {
-								log.Println(formattedErrorMesage)
-							}
-							return
-						}
+						HandleError(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 
 						var obviouslyRelatedChannelNames []string
 						// ObviouslyRelatedChannelIDs

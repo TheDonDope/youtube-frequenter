@@ -20,6 +20,13 @@ func GetFormattedErrorMessage(errorToHandle error, errorMessage string) string {
 	return ""
 }
 
+// HandleError handles the given error
+func HandleError(errorToHandle error, errorMessage string) {
+	if errorToHandle != nil {
+		log.Println(GetFormattedErrorMessage(errorToHandle, errorMessage))
+	}
+}
+
 // Printfln prints a line with a formatted string.
 func Printfln(format string, a ...interface{}) {
 	log.Println(fmt.Sprintf(format, a))
@@ -62,9 +69,7 @@ func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
 
 		jsonFile, jsonFileError := os.OpenFile("results.json", os.O_WRONLY|os.O_CREATE, 0644)
 		defer jsonFile.Close()
-		if jsonFileError != nil {
-			log.Println(jsonFileError)
-		}
+		HandleError(jsonFileError, "JSON File error")
 		jsonFile.Write(jsonString)
 
 		for _, item := range sortedRelatedChannelIDsList {
