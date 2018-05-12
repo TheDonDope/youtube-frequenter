@@ -27,7 +27,12 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 			log.Println("<-- (1/5): Receiving into GetChannelOverview")
 			if channelMetaInfo.NextOperation == GetChannelOverviewOperation {
 				log.Println("<-> (1/5): Working in GetChannelOverview")
-				call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
+				call := service.Channels.List("contentDetails,snippet,statistics")
+				if channelMetaInfo.CustomURL != "" {
+					call = call.ForUsername(channelMetaInfo.CustomURL)
+				} else if channelMetaInfo.ChannelID != "" {
+					call = call.Id(channelMetaInfo.ChannelID)
+				}
 
 				response, responseError := call.Do()
 				if responseError != nil {

@@ -14,7 +14,7 @@ import (
 var opts struct {
 	ChannelID string `short:"i" long:"channel-id" description:"The channel ID of a YouTube Channel"`
 
-	CustomURL string `short:"u" long:"custom-url" description:"The custom URL of a YouTube Channel" required:"true"`
+	CustomURL string `short:"u" long:"custom-url" description:"The custom URL of a YouTube Channel"`
 
 	PlaylistName string `short:"n" long:"playlist-name" description:"The name of the playlist to search. Currently only supports the following playlists: uploads, favorites"`
 }
@@ -44,6 +44,7 @@ func main() {
 		}
 	}
 	channelMetaInfo := api.ChannelMetaInfo{}
+	channelMetaInfo.ChannelID = opts.ChannelID
 	channelMetaInfo.CustomURL = opts.CustomURL
 	results := api.Exfoliator(youtubeService, channelMetaInfo)
 	log.Println("Exfoliator exfoliated successfully.")
