@@ -66,8 +66,8 @@ type ChannelMetaInfo struct {
 
 // MapEntry is a stract for a map entry
 type MapEntry struct {
-	Key   string
-	Value int
+	Key   string `json:"key"`
+	Value int    `json:"value"`
 }
 
 // MapEntryList is a type for an array of MapEntrys

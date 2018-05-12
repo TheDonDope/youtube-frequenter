@@ -1,8 +1,10 @@
 package api
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
+	"os"
 	"sort"
 )
 
@@ -49,6 +51,18 @@ func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
 		log.Println("Package to analyse has no ObviouslyRelatedChannelIDs to count.")
 	} else {
 		sortedRelatedChannelIDsList := RankByWordCount(relatedChannelIDToNumberOfOccurrences)
+		jsonString, jsonError := json.Marshal(sortedRelatedChannelIDsList)
+		if jsonError != nil {
+			log.Println(jsonError)
+		}
+
+		jsonFile, jsonFileError := os.OpenFile("results.json", os.O_WRONLY|os.O_CREATE|os.O_APPEND, 0644)
+		defer jsonFile.Close()
+		if jsonFileError != nil {
+			log.Println(jsonFileError)
+		}
+		jsonFile.Write(jsonString)
+
 		for _, item := range sortedRelatedChannelIDsList {
 			log.Println(fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", item.Key, item.Value))
 		}

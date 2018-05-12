@@ -225,3 +225,6 @@ $RECYCLE.BIN/
 
 
 # End of https://www.gitignore.io/api/go,macos,linux,python,windows,sublimetext,visualstudiocode
+
+# Results File
+results.json
