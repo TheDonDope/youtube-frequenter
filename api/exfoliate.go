@@ -102,7 +102,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 			log.Println("<-- (2/5): Receiving into GetVideoIDsOverview")
 			if channelMetaInfo.NextOperation == GetVideoIDsOverviewOperation {
 				log.Println("<-> (2/5): Working in GetVideoIDsOverview")
-				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
+				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(5)
 
 				response, responseError := call.Do()
 				if responseError != nil {
@@ -145,7 +145,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				log.Println("<-> (3/5): Working in GetCommentsOverview")
 				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
 					go func(index int, inputVideo *Video) {
-						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(100)
+						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(10)
 						response, responseError := call.Do()
 
 						if responseError != nil {
@@ -197,7 +197,6 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						Printfln("<-> (4/5): (#-----) Begin service.Channels.List for ChannelID: %v", inputCommentatorChannelID)
 						getChannelCall := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
 						getChannelResponse, getChannelResponseError := getChannelCall.Do()
-						Printfln("<-> (4/5): (##----) End service.Channels.List (error: %v)", getChannelResponseError)
 						if getChannelResponseError != nil {
 							formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 							if formattdErrorMessage != "" {
@@ -207,10 +206,12 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						}
 						favoritesPlaylistID := getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites
 						if favoritesPlaylistID == "" {
+							Printfln("<-> (4/5): (#X----) End service.Channels.List (error: %v)", getChannelResponseError)
 							return
 						}
+						Printfln("<-> (4/5): (##----) End service.Channels.List (error: %v)", getChannelResponseError)
 						Printfln("<-> (4/5): (###---) Begin service.PlaylistItems.List for PlaylistID: %v", favoritesPlaylistID)
-						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(favoritesPlaylistID).MaxResults(50)
+						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(favoritesPlaylistID).MaxResults(10)
 						getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 						Printfln("<-> (4/5): (####--) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
 						if getPlaylistItemsResponseError != nil {
