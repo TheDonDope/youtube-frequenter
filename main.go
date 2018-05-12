@@ -7,7 +7,7 @@ import (
 
 	"github.com/jessevdk/go-flags"
 
-	"github.com/TheDonDope/youtube-tinfoil-expose/go/api"
+	"github.com/TheDonDope/youtube-tinfoil-expose/api"
 )
 
 var opts struct {

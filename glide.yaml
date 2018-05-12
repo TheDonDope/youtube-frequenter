@@ -1,4 +1,4 @@
-package: github.com/TheDonDope/youtube-tinfoil-expose/go
+package: github.com/TheDonDope/youtube-tinfoil-expose
 import:
 - package: google.golang.org/api
   subpackages:
