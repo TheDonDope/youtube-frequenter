@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"time"
 
 	"google.golang.org/api/youtube/v3"
 )
@@ -257,57 +256,18 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 	}()
 }
 
-// Exfoliator exfoliates
-func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
-	monoChannel := make(chan ChannelMetaInfo)
-	lastButNotLeastChannel := make(chan ChannelMetaInfo)
-	accumulatedMetaInfo := ChannelMetaInfo{}
-	accumulatedMetaInfo.CustomURL = channelMetaInfo.CustomURL
-	accumulatedMetaInfo.ChannelID = channelMetaInfo.ChannelID
-	accumulatedMetaInfo.Playlists = channelMetaInfo.Playlists
-	go func() {
-		monoChannel <- channelMetaInfo
-	}()
-	go GetChannelOverview(service, monoChannel)
-	go GetVideoIDsOverview(service, monoChannel)
-	go GetCommentsOverview(service, monoChannel)
-	go GetObviouslyRelatedChannelsOverview(service, monoChannel, lastButNotLeastChannel)
-
-	globalTimeout, globalTimeoutError := time.ParseDuration(Opts.GlobalTimeout)
-	if globalTimeoutError != nil {
-		log.Println(globalTimeoutError)
+// CreateInitialChannelMetaInfo creates the initial request context
+func CreateInitialChannelMetaInfo() ChannelMetaInfo {
+	initialChannelMetaInfo := ChannelMetaInfo{}
+	if Opts.PlaylistID == "" {
+		initialChannelMetaInfo.ChannelID = Opts.ChannelID
+		initialChannelMetaInfo.CustomURL = Opts.CustomURL
+		initialChannelMetaInfo.NextOperation = GetChannelOverviewOperation
+	} else {
+		uploadedPlaylist := &Playlist{PlaylistID: Opts.PlaylistID}
+		initialChannelMetaInfo.Playlists = make(map[string]*Playlist)
+		initialChannelMetaInfo.Playlists["uploads"] = uploadedPlaylist
+		initialChannelMetaInfo.NextOperation = GetVideoIDsOverviewOperation
 	}
-	timeout := time.After(globalTimeout)
-	for {
-		log.Println("<<<<<Begin Exfoliator Main Loop")
-		select {
-		case channelMetaInfo = <-lastButNotLeastChannel:
-			log.Println("<-- (5/5): Exfoliator")
-			log.Println("<-> (5/5): Working in Exfoliator")
-			// evtl die anderen properties adden
-			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
-			log.Println("--> (5/5): Exfoliator")
-		case <-timeout:
-			Printfln("Request timed out (%v)", Opts.GlobalTimeout)
-			return accumulatedMetaInfo
-		}
-	}
-
-	// // check for unused channelMetaInfo
-	// timeoutAfter := time.After(5 * time.Second)
-	// for i := 0; i < 10000; i++ {
-	// 	select {
-	// 	case channelMetaInfo = <-getChannelOverviewOutChannel:
-	// 		Printfln("!!!getChannelOverviewOutChannel%s", "")
-	// 	case channelMetaInfo = <-getVideoIDsOverviewOutChannel:
-	// 		Printfln("!!!getVideoIDsOverviewOutChannel%s", "")
-	// 	case channelMetaInfo = <-getCommentsOverviewOutChannel:
-	// 		Printfln("!!getCommentsOverviewOutChannel%s", "")
-	// 	case channelMetaInfo = <-getObviouslyRelatedChannelsOverviewChannel:
-	// 		Printfln("After #relatedChannels=%v ", len(channelMetaInfo.ObviouslyRelatedChannelIDs))
-	// 	case <-timeoutAfter:
-	// 		Printfln("After Request timed out (5sec): %d", i)
-	// 		return channelMetaInfo
-	// 	}
-	// }
+	return initialChannelMetaInfo
 }

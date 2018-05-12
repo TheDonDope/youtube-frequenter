@@ -1,5 +1,13 @@
 package api
 
+import (
+	"io"
+	"log"
+	"os"
+
+	"github.com/jessevdk/go-flags"
+)
+
 // Opts are the program options, configurable by command line argument
 var Opts struct {
 	ChannelID string `short:"c" long:"channel-id" description:"The channel ID of a YouTube Channel."`
@@ -17,4 +25,36 @@ var Opts struct {
 	AverageAPICallDuration string `short:"d" long:"average-api-call-duration" description:"The duration we estimate to average for a single API call (default: 10ms, format: 1h10m10s)" default:"10ms"`
 
 	GlobalTimeout string `short:"t" long:"global-timeout" description:"The timeout for the complete program (default: 60sec, format: 1h10m10s)" default:"60s"`
+}
+
+// ParseArguments parses the program arguments
+func ParseArguments() {
+	_, argsError := flags.ParseArgs(&Opts, os.Args)
+	if argsError != nil {
+		panic(argsError)
+	}
+}
+
+// ConfigureLogging configures the logging
+func ConfigureLogging() {
+	//create your file with desired read/write permissions
+	var logFileName string
+	if Opts.ChannelID != "" {
+		logFileName = "channel-id-" + Opts.ChannelID
+	} else if Opts.CustomURL != "" {
+		logFileName = "custom-url-" + Opts.CustomURL
+	} else if Opts.PlaylistID != "" {
+		logFileName = "playlist-id-" + Opts.PlaylistID
+	}
+	logFileName = logFileName + ".log"
+	os.MkdirAll("logs", 0700)
+	logFile, logFileError := os.OpenFile("logs/"+logFileName, os.O_WRONLY|os.O_CREATE, 0644)
+	if logFileError != nil {
+		log.Fatal(logFileError)
+	}
+
+	//set output of logs to f
+	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
+	//defer to close when you're done with it, not because you think it's idiomatic!
+	defer logFile.Close()
 }
