@@ -95,7 +95,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 			log.Println("<-- (2/5): Receiving into GetVideoIDsOverview")
 			if channelMetaInfo.NextOperation == GetVideoIDsOverviewOperation {
 				log.Println("<-> (2/5): Working in GetVideoIDsOverview")
-				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
+				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(MaxResultsUploadedVideos)
 
 				response, responseError := call.Do()
 				if responseError != nil {
@@ -137,7 +137,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				log.Println("<-> (3/5): Working in GetCommentsOverview")
 				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
 					go func(index int, inputVideo *Video) {
-						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(10)
+						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(MaxResultsCommentPerVideo)
 						response, responseError := call.Do()
 
 						if responseError != nil {
@@ -202,7 +202,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						}
 						Printfln("<-> (4/5): (##----) End service.Channels.List (error: %v)", getChannelResponseError)
 						Printfln("<-> (4/5): (###---) Begin service.PlaylistItems.List for PlaylistID: %v", favoritesPlaylistID)
-						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(favoritesPlaylistID).MaxResults(10)
+						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(favoritesPlaylistID).MaxResults(MaxResultsFavouritedVideos)
 						getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 						Printfln("<-> (4/5): (####--) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
 						if getPlaylistItemsResponseError != nil {
