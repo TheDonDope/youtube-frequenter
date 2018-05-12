@@ -277,7 +277,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
 			log.Println("--> (5/5): Exfoliator")
 		case <-time.After(GlobalTimeout):
-			log.Println("Request timed out (30 sec)")
+			Printfln("Request timed out (%v)", GlobalTimeout)
 			return accumulatedMetaInfo
 		}
 	}
