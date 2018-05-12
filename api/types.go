@@ -63,3 +63,12 @@ type ChannelMetaInfo struct {
 	ObviouslyRelatedChannelIDs []string
 	NextOperation              NextOperation
 }
+
+// MapEntry is a stract for a map entry
+type MapEntry struct {
+	Key   string
+	Value int
+}
+
+// MapEntryList is a type for an array of MapEntrys
+type MapEntryList []MapEntry

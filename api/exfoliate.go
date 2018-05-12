@@ -102,7 +102,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 			log.Println("<-- (2/5): Receiving into GetVideoIDsOverview")
 			if channelMetaInfo.NextOperation == GetVideoIDsOverviewOperation {
 				log.Println("<-> (2/5): Working in GetVideoIDsOverview")
-				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(5)
+				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
 
 				response, responseError := call.Do()
 				if responseError != nil {
@@ -277,7 +277,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	go GetCommentsOverview(service, monoChannel)
 	go GetObviouslyRelatedChannelsOverview(service, monoChannel, lastButNotLeastChannel)
 
-	timeout := time.After(60 * 60 * time.Second)
+	timeout := time.After(3 * 60 * time.Second)
 	// time.Sleep(time.Second)
 
 	for {
