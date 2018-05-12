@@ -1,12 +1,15 @@
 package api
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
-	"os"
 	"sort"
 )
+
+// GetFormattedFailMessage returns a formatted fail message for unit tests
+func GetFormattedFailMessage(what string, expected string, actual string) string {
+	return fmt.Sprintf("%s was incorrect, expected: <%s>, actual: <%s>", what, expected, actual)
+}
 
 // GetFormattedErrorMessage returns a formatted error message for the given
 // errorToHandle and errorMessage.
@@ -47,35 +50,6 @@ func CountOccurrences(stringSlice []string) map[string]int {
 		}
 	}
 	return elementToFrequencyMap
-}
-
-// AnalyseChannelMetaInfo prints additional information for a given channelMetaInfo.
-func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
-
-	relatedChannelIDToNumberOfOccurrences := CountOccurrences(channelMetaInfo.ObviouslyRelatedChannelIDs)
-
-	if len(relatedChannelIDToNumberOfOccurrences) == 0 {
-		log.Println("Package to analyse has no ObviouslyRelatedChannelIDs to count.")
-	} else {
-		sortedRelatedChannelIDsList := RankByWordCount(relatedChannelIDToNumberOfOccurrences)
-		jsonString, jsonError := json.Marshal(sortedRelatedChannelIDsList)
-		if jsonError != nil {
-			log.Println(jsonError)
-		}
-
-		if _, err := os.Stat("results.json"); err == nil {
-			os.Remove("results.json")
-		}
-
-		jsonFile, jsonFileError := os.OpenFile("results.json", os.O_WRONLY|os.O_CREATE, 0644)
-		defer jsonFile.Close()
-		HandleError(jsonFileError, "JSON File error")
-		jsonFile.Write(jsonString)
-
-		for _, item := range sortedRelatedChannelIDsList {
-			log.Println(fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", item.Key, item.Value))
-		}
-	}
 }
 
 // RankByWordCount returns a list of sorted MapEntrys

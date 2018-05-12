@@ -7,26 +7,26 @@ import (
 
 func TestNextOperationStringer(t *testing.T) {
 	if getChannelOverviewOperation := fmt.Sprint(GetChannelOverviewOperation); getChannelOverviewOperation != "GetChannelOverviewOperation" {
-		t.Errorf("GetChannelOverviewOperation stringer was incorrect, got: %s, want: %s", getChannelOverviewOperation, "GetChannelOverviewOperation")
+		t.Errorf(GetFormattedFailMessage("GetChannelOverviewOperation", "GetChannelOverviewOperation", getChannelOverviewOperation))
 	}
 	if getVideoIDsOverviewOperation := fmt.Sprint(GetVideoIDsOverviewOperation); getVideoIDsOverviewOperation != "GetVideoIDsOverviewOperation" {
-		t.Errorf("GetVideoIDsOverviewOperation stringer was incorrect, got: %s, want: %s", getVideoIDsOverviewOperation, "GetVideoIDsOverviewOperation")
+		t.Errorf(GetFormattedFailMessage("GetVideoIDsOverviewOperation", "GetVideoIDsOverviewOperation", getVideoIDsOverviewOperation))
 	}
 	if getCommentsOverviewOperation := fmt.Sprint(GetCommentsOverviewOperation); getCommentsOverviewOperation != "GetCommentsOverviewOperation" {
-		t.Errorf("GetCommentsOverviewOperation stringer was incorrect, got: %s, want: %s", getCommentsOverviewOperation, "GetCommentsOverviewOperation")
+		t.Errorf(GetFormattedFailMessage("GetCommentsOverviewOperation", "GetCommentsOverviewOperation", getCommentsOverviewOperation))
 	}
 	if getObviouslyRelatedChannelsOverviewOperation := fmt.Sprint(GetObviouslyRelatedChannelsOverviewOperation); getObviouslyRelatedChannelsOverviewOperation != "GetObviouslyRelatedChannelsOverviewOperation" {
-		t.Errorf("GetObviouslyRelatedChannelsOverviewOperation stringer was incorrect, got: %s, want: %s", getObviouslyRelatedChannelsOverviewOperation, "GetObviouslyRelatedChannelsOverviewOperation")
+		t.Errorf(GetFormattedFailMessage("GetObviouslyRelatedChannelsOverviewOperation", "GetObviouslyRelatedChannelsOverviewOperation", getObviouslyRelatedChannelsOverviewOperation))
 	}
 	if noOperation := fmt.Sprint(NoOperation); noOperation != "NoOperation" {
-		t.Errorf("NoOperation stringer was incorrect, got: %s, want: %s", noOperation, "NoOperation")
+		t.Errorf(GetFormattedFailMessage("NoOperation", "NoOperation", noOperation))
 	}
 	var unknownNegativeOperation NextOperation = -1
 	if negativeUnknownString := fmt.Sprint(unknownNegativeOperation); negativeUnknownString != "Unknown" {
-		t.Errorf("unknownNegativeOperation stringer was incorrect, got: %s, want: %s", negativeUnknownString, "Unknown")
+		t.Errorf(GetFormattedFailMessage("UnknownNegativeOperation", "Unknow", negativeUnknownString))
 	}
-	var positiveUnknownOperation NextOperation = 4
+	var positiveUnknownOperation NextOperation = 5
 	if positiveUnknownString := fmt.Sprint(positiveUnknownOperation); positiveUnknownString != "Unknown" {
-		t.Errorf("positiveUnknownOperation stringer was incorrect, got: %s, want: %s", positiveUnknownString, "Unknown")
+		t.Errorf(GetFormattedFailMessage("PositiveUnknownOperation", "Unknow", positiveUnknownString))
 	}
 }
