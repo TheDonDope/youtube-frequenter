@@ -262,6 +262,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	lastButNotLeastChannel := make(chan ChannelMetaInfo)
 	channelMetaInfo.NextOperation = GetChannelOverviewOperation
 	accumulatedMetaInfo := ChannelMetaInfo{}
+	accumulatedMetaInfo.CustomURL = channelMetaInfo.CustomURL
 	go func() {
 		monoChannel <- channelMetaInfo
 	}()
@@ -279,6 +280,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 		case channelMetaInfo = <-lastButNotLeastChannel:
 			log.Println("<-- (5/5): Exfoliator")
 			log.Println("<-> (5/5): Working on Exfoliator ++++++")
+			// evtl die anderen properties adden
 			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
 			log.Println("--> (5/5): Exfoliator")
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
