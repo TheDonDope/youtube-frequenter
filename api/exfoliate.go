@@ -30,9 +30,9 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 		defer log.Println("End GetChannelOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
-			log.Println("<-- (1/5): GetChannelOverview")
+			log.Println("<-- (1/5): Receiving into GetChannelOverview")
 			if channelMetaInfo.NextOperation == GetChannelOverviewOperation {
-				log.Println("<-> (1/5): Working on GetChannelOverview")
+				log.Println("<-> (1/5): Working in GetChannelOverview")
 				call := service.Channels.List("contentDetails,snippet,statistics").ForUsername(channelMetaInfo.CustomURL)
 
 				response, responseError := call.Do()
@@ -80,11 +80,11 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 
 				channelMetaInfo.NextOperation = GetVideoIDsOverviewOperation
 				monoChannel <- channelMetaInfo
-				log.Println("--> (1/5): GetChannelOverview")
+				log.Println("--> (1/5): Sending out from GetChannelOverview")
 			} else {
-				log.Println("x-x (1/5): NOT Working on GetChannelOverview")
+				log.Println("x-x (1/5): NOT Working in GetChannelOverview")
 				monoChannel <- channelMetaInfo
-				log.Println("--> (1/5): GetChannelOverview")
+				log.Println("--> (1/5): Sendubg out from GetChannelOverview")
 			}
 			time.Sleep(time.Duration(rand.Intn(5*SleepTime)) * time.Millisecond)
 		}
@@ -99,9 +99,9 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 		defer log.Println("End GetVideoIDsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
-			log.Println("<-- (2/5): GetVideoIDsOverview")
+			log.Println("<-- (2/5): Receiving into GetVideoIDsOverview")
 			if channelMetaInfo.NextOperation == GetVideoIDsOverviewOperation {
-				log.Println("<-> (2/5): Working on GetVideoIDsOverview")
+				log.Println("<-> (2/5): Working in GetVideoIDsOverview")
 				call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(channelMetaInfo.Playlists["uploads"].PlaylistID).MaxResults(50)
 
 				response, responseError := call.Do()
@@ -122,11 +122,11 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				uploadPlaylist.PlaylistItems = videos
 				channelMetaInfo.NextOperation = GetCommentsOverviewOperation
 				monoChannel <- channelMetaInfo
-				log.Println("--> (2/5): GetVideoIDsOverview")
+				log.Println("--> (2/5): Sending out from GetVideoIDsOverview")
 			} else {
-				log.Println("x-x (2/5): NOT Working on GetVideoIDsOverview")
+				log.Println("x-x (2/5): NOT Working in GetVideoIDsOverview")
 				monoChannel <- channelMetaInfo
-				log.Println("--> (2/5): GetVideoIDsOverview")
+				log.Println("--> (2/5): Sending out from GetVideoIDsOverview")
 			}
 			time.Sleep(time.Duration(rand.Intn(2*SleepTime)) * time.Millisecond)
 		}
@@ -140,9 +140,9 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 		defer log.Println("End GetCommentsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
-			log.Println("<-- (3/5): GetCommentsOverview")
+			log.Println("<-- (3/5): Receiving into GetCommentsOverview")
 			if channelMetaInfo.NextOperation == GetCommentsOverviewOperation {
-				log.Println("<-> (3/5): Working on GetCommentsOverview")
+				log.Println("<-> (3/5): Working in GetCommentsOverview")
 				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
 					go func(index int, inputVideo *Video) {
 						call := service.CommentThreads.List("snippet").VideoId(inputVideo.VideoID).MaxResults(100)
@@ -169,13 +169,13 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 						inputVideo.Comments = comments
 						channelMetaInfo.NextOperation = GetObviouslyRelatedChannelsOverviewOperation
 						monoChannel <- channelMetaInfo
-						log.Println("--> (3/5): GetCommentsOverview")
+						log.Println("--> (3/5): Sending out from GetCommentsOverview")
 					}(i, video)
 				}
 			} else {
-				log.Println("x-x (3/5): NOT Working on GetCommentsOverview")
+				log.Println("x-x (3/5): NOT Working in GetCommentsOverview")
 				monoChannel <- channelMetaInfo
-				log.Println("--> (3/5): GetCommentsOverview")
+				log.Println("--> (3/5): Sending out from GetCommentsOverview")
 			}
 			time.Sleep(time.Duration(rand.Intn(2*SleepTime)) * time.Millisecond)
 		}
@@ -189,15 +189,15 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 		defer log.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
 		for {
 			channelMetaInfo := <-monoChannel
-			log.Println("<-- (4/5): GetObviouslyRelatedChannelsOverview")
+			log.Println("<-- (4/5): Receiving into GetObviouslyRelatedChannelsOverview")
 			if channelMetaInfo.NextOperation == GetObviouslyRelatedChannelsOverviewOperation {
-				log.Println("<-> (4/5): Working on GetObviouslyRelatedChannelsOverview")
+				log.Println("<-> (4/5): Working in GetObviouslyRelatedChannelsOverview")
 				for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
 					go func(index int, inputCommentatorChannelID string) {
 						Printfln("<-> (4/5): (1/3) Begin service.Channels.List for ChannelID: %v", inputCommentatorChannelID)
 						getChannelCall := service.Channels.List("snippet,contentDetails").Id(inputCommentatorChannelID)
 						getChannelResponse, getChannelResponseError := getChannelCall.Do()
-						log.Println(fmt.Sprintf("<-> (4/5): (1/3) End service.Channels.List with result: %v error: %v", getChannelResponse, getChannelResponseError))
+						Printfln("<-> (4/5): (1/3) End service.Channels.List (error: %v)", getChannelResponseError)
 						if getChannelResponseError != nil {
 							formattdErrorMessage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 							if formattdErrorMessage != "" {
@@ -209,7 +209,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						getPlaylistItemsCall := service.PlaylistItems.List("contentDetails").PlaylistId(getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites).MaxResults(50)
 						getPlaylistItemsResponse, getPlaylistItemsResponseError := getPlaylistItemsCall.Do()
 						log.Println("->> (4/5)!!: GetObviouslyRelatedChannelsOverview")
-						log.Println(fmt.Sprintf("<-> (4/5): (2/3) End service.PlaylistItems.List with result: %v error: %v", getPlaylistItemsResponse, getPlaylistItemsResponseError))
+						Printfln("<-> (4/5): (2/3) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
 						if getPlaylistItemsResponseError != nil {
 							formattedErrorMesage := GetFormattedErrorMessage(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 							if formattedErrorMesage != "" {
@@ -226,7 +226,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						Printfln("<-> (4/5): (3/3) Begin service.Videos.List for VideoIDs: %v", strings.Join(favoritedVideoIDs, ","))
 						getRelatedChannelCall := service.Videos.List("snippet").Id(strings.Join(favoritedVideoIDs, ","))
 						getRelatedChannelResponse, getRelatedChannelResponseError := getRelatedChannelCall.Do()
-						log.Println(fmt.Sprintf("<-> (4/5): (3/3) End service.Videos.List with result: %v error: %v", getRelatedChannelResponse, getRelatedChannelResponseError))
+						Printfln("<-> (4/5): (3/3) End service.Videos.List (error: %v)", getRelatedChannelResponseError)
 
 						if getRelatedChannelResponseError != nil {
 							formattedErrorMesage := GetFormattedErrorMessage(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
@@ -244,14 +244,14 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 
 						channelMetaInfo.ObviouslyRelatedChannelIDs = obviouslyRelatedChannelNames
 						lastButNotLeastChannel <- channelMetaInfo
-						log.Println("--> (4/5): GetObviouslyRelatedChannelsOverview")
+						log.Println("--> (4/5): Sending out from GetObviouslyRelatedChannelsOverview to lastButNotLeastChannel")
 
 					}(i, commentatorChannelID)
 				}
 			} else {
-				log.Println("x-x (4/5): NOT Working on GetObviouslyRelatedChannelsOverview")
+				log.Println("x-x (4/5): NOT Working in GetObviouslyRelatedChannelsOverview")
 				monoChannel <- channelMetaInfo
-				log.Println("--> (4/5): GetObviouslyRelatedChannelsOverview")
+				log.Println("--> (4/5): Sending out from GetObviouslyRelatedChannelsOverview to monoChannel")
 			}
 			time.Sleep(time.Duration(rand.Intn(SleepTime)) * time.Millisecond)
 		}
@@ -273,7 +273,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	go GetCommentsOverview(service, monoChannel)
 	go GetObviouslyRelatedChannelsOverview(service, monoChannel, lastButNotLeastChannel)
 
-	timeout := time.After(5 * 60 * time.Second)
+	timeout := time.After(60 * 60 * time.Second)
 	// time.Sleep(time.Second)
 
 	for {
