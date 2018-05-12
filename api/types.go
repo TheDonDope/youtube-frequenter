@@ -1,25 +1,25 @@
 package api
 
-// Comment information for a YouTube video
+// Comment is the struct for information on comments
 type Comment struct {
 	CommentID       string
 	AuthorChannelID string
 }
 
-// Video information for a YouTube video
+// Video is the struct for information on videos
 type Video struct {
 	VideoID           string
 	UploaderChannelID string
 	Comments          []*Comment
 }
 
-// Playlist information of a YouTube playlist
+// Playlist is the struct for information on playlists
 type Playlist struct {
 	PlaylistID    string
 	PlaylistItems []*Video
 }
 
-// ChannelMetaInfo of a YouTube channel
+// ChannelMetaInfo is the struct for information YouTube channels
 type ChannelMetaInfo struct {
 	ChannelID                  string
 	ChannelName                string
@@ -48,6 +48,7 @@ const (
 	NoOperation
 )
 
+// This function is the Stringer for the NextOperation enum
 func (operation NextOperation) String() string {
 	operationNames := [...]string{
 		"GetChannelOverviewOperation",
