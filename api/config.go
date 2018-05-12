@@ -17,7 +17,7 @@ const (
 	AverageAPICallDuration = 10 * time.Millisecond
 
 	// GlobalTimeout is the timeout for the complete program
-	GlobalTimeout = 100 * time.Second
+	GlobalTimeout = 42 * time.Second
 	//GlobalTimeout = MaxResultsUploadedVideos * MaxResultsCommentPerVideo * MaxResultsFavouritedVideos * AverageAPICallDuration
 
 )
