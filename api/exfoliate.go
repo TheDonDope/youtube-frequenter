@@ -267,8 +267,6 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	go GetCommentsOverview(service, monoChannel)
 	go GetObviouslyRelatedChannelsOverview(service, monoChannel, lastButNotLeastChannel)
 
-	timeout := time.After(3 * 60 * time.Second)
-
 	for {
 		log.Println("<<<<<Begin Exfoliator Main Loop")
 		select {
@@ -278,7 +276,7 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 			// evtl die anderen properties adden
 			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
 			log.Println("--> (5/5): Exfoliator")
-		case <-timeout:
+		case <-time.After(GlobalTimeout):
 			log.Println("Request timed out (30 sec)")
 			return accumulatedMetaInfo
 		}

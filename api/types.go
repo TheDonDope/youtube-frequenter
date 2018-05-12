@@ -1,5 +1,7 @@
 package api
 
+import "time"
+
 // NextOperation declares an enum type for operation names
 type NextOperation int
 
@@ -14,6 +16,11 @@ const (
 	GetObviouslyRelatedChannelsOverviewOperation
 	// NoOperation is a NextOperation enum value
 	NoOperation
+)
+
+var (
+	// GlobalTimeout is the timeout for the complete program
+	GlobalTimeout = 60 * time.Second
 )
 
 // This function is the Stringer for the NextOperation enum
