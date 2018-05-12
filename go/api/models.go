@@ -47,3 +47,18 @@ const (
 	// NoOperation is a NextOperation enum value
 	NoOperation
 )
+
+func (operation NextOperation) String() string {
+	operationNames := [...]string{
+		"GetChannelOverviewOperation",
+		"GetVideoIDsOverviewOperation",
+		"GetCommentsOverviewOperation",
+		"GetObviouslyRelatedChannelsOverviewOperation",
+		"NoOperation"}
+
+	if operation < GetChannelOverviewOperation || operation > NoOperation {
+		return "Unknown"
+	}
+
+	return operationNames[operation]
+}
