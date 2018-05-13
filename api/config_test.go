@@ -90,6 +90,7 @@ func TestShouldConfigureLoggingWithChannelID(t *testing.T) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithChannelID", "Log file created.", err.Error()))
 	}
 	Opts = originalOpts
+	os.RemoveAll("logs")
 }
 
 func TestShouldConfigureLoggingWithCustomURL(t *testing.T) {
@@ -110,6 +111,7 @@ func TestShouldConfigureLoggingWithCustomURL(t *testing.T) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithCustomURL", "Log file created.", err.Error()))
 	}
 	Opts = originalOpts
+	os.RemoveAll("logs")
 }
 
 func TestShouldConfigureLoggingWithPlaylistID(t *testing.T) {
@@ -130,4 +132,5 @@ func TestShouldConfigureLoggingWithPlaylistID(t *testing.T) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithPlaylistID", "Log file created.", err.Error()))
 	}
 	Opts = originalOpts
+	os.RemoveAll("logs")
 }
