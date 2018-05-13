@@ -17,7 +17,7 @@ import (
 // - Playlists (With their PlaylistID and PlaylistName)
 // - SubscriberCount
 // - ViewCount
-func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
+func GetChannelOverview(service *youtube.Service, serviceImpl YouTubeService, monoChannel chan ChannelMetaInfo) {
 	go func() {
 		log.Println("<<<<<Begin GetChannelOverview Go Routine")
 		defer log.Println("End GetChannelOverview Go Routine>>>>>")
@@ -26,7 +26,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 			log.Println("<-- (1/5): Receiving into GetChannelOverview")
 			if channelMetaInfo.NextOperation == GetChannelOverviewOperation {
 				log.Println("<-> (1/5): Working in GetChannelOverview")
-				response, responseError := ChannelsList(service, channelMetaInfo.ChannelID, channelMetaInfo.CustomURL)
+				response, responseError := serviceImpl.ChannelsList(service, channelMetaInfo.ChannelID, channelMetaInfo.CustomURL)
 
 				HandleError(responseError, "GetChannelOverview Response error!")
 
@@ -79,7 +79,7 @@ func GetChannelOverview(service *youtube.Service, monoChannel chan ChannelMetaIn
 }
 
 // GetVideoIDsOverview gets all videos.
-func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
+func GetVideoIDsOverview(service *youtube.Service, serviceImpl YouTubeService, monoChannel chan ChannelMetaInfo) {
 	go func() {
 		log.Println("<<<<<Begin GetVideoIDsOverview Go Routine")
 		defer log.Println("End GetVideoIDsOverview Go Routine>>>>>")
@@ -88,7 +88,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 			log.Println("<-- (2/5): Receiving into GetVideoIDsOverview")
 			if channelMetaInfo.NextOperation == GetVideoIDsOverviewOperation {
 				log.Println("<-> (2/5): Working in GetVideoIDsOverview")
-				response, responseError := PlaylistItemsList(service, channelMetaInfo.Playlists["uploads"].PlaylistID, "uploads")
+				response, responseError := serviceImpl.PlaylistItemsList(service, channelMetaInfo.Playlists["uploads"].PlaylistID, "uploads")
 
 				HandleError(responseError, "GetVideoIDsOverview Response error!")
 
@@ -113,7 +113,7 @@ func GetVideoIDsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 }
 
 // GetCommentsOverview foo
-func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo) {
+func GetCommentsOverview(service *youtube.Service, serviceImpl YouTubeService, monoChannel chan ChannelMetaInfo) {
 	go func() {
 		log.Println("<<<<<Begin GetCommentsOverview Go Routine")
 		defer log.Println("End GetCommentsOverview Go Routine>>>>>")
@@ -124,7 +124,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 				log.Println("<-> (3/5): Working in GetCommentsOverview")
 				for i, video := range channelMetaInfo.Playlists["uploads"].PlaylistItems {
 					go func(index int, inputVideo *Video) {
-						response, responseError := CommentThreadsList(service, inputVideo.VideoID)
+						response, responseError := serviceImpl.CommentThreadsList(service, inputVideo.VideoID)
 
 						HandleError(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
 
@@ -154,7 +154,7 @@ func GetCommentsOverview(service *youtube.Service, monoChannel chan ChannelMetaI
 }
 
 // GetObviouslyRelatedChannelsOverview gets the related channels for a YouTube channel
-func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel chan ChannelMetaInfo, lastButNotLeastChannel chan ChannelMetaInfo) {
+func GetObviouslyRelatedChannelsOverview(service *youtube.Service, serviceImpl YouTubeService, monoChannel chan ChannelMetaInfo, lastButNotLeastChannel chan ChannelMetaInfo) {
 	go func() {
 		log.Println("<<<<<Begin GetObviouslyRelatedChannelsOverview Go Routine")
 		defer log.Println("End GetObviouslyRelatedChannelsOverview Go Routine>>>>>")
@@ -166,7 +166,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 				for i, commentatorChannelID := range channelMetaInfo.CommentAuthorChannelIDs {
 					go func(index int, inputCommentatorChannelID string) {
 						Printfln("<-> (4/5): (#-----) Begin service.Channels.List for ChannelID: %v", inputCommentatorChannelID)
-						getChannelResponse, getChannelResponseError := ChannelsList(service, inputCommentatorChannelID, "")
+						getChannelResponse, getChannelResponseError := serviceImpl.ChannelsList(service, inputCommentatorChannelID, "")
 
 						HandleError(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 
@@ -178,7 +178,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 						Printfln("<-> (4/5): (##----) End service.Channels.List (error: %v)", getChannelResponseError)
 						Printfln("<-> (4/5): (###---) Begin service.PlaylistItems.List for PlaylistID: %v", favoritesPlaylistID)
 
-						getPlaylistItemsResponse, getPlaylistItemsResponseError := PlaylistItemsList(service, favoritesPlaylistID, "favorites")
+						getPlaylistItemsResponse, getPlaylistItemsResponseError := serviceImpl.PlaylistItemsList(service, favoritesPlaylistID, "favorites")
 						Printfln("<-> (4/5): (####--) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
 
 						HandleError(getPlaylistItemsResponseError, "GetObviouslyRelatedChannelsOverview#%d Response error!")
@@ -190,7 +190,7 @@ func GetObviouslyRelatedChannelsOverview(service *youtube.Service, monoChannel c
 
 						Printfln("<-> (4/5): (#####-) Begin service.Videos.List for VideoIDs: %v", strings.Join(favoritedVideoIDs, ","))
 						getRelatedChannelResponse, getRelatedChannelResponseError :=
-							VideosList(service, strings.Join(favoritedVideoIDs, ","))
+							serviceImpl.VideosList(service, strings.Join(favoritedVideoIDs, ","))
 
 						Printfln("<-> (4/5): (######) End service.Videos.List (error: %v)", getRelatedChannelResponseError)
 
