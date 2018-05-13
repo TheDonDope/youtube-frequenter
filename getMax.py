@@ -7,13 +7,12 @@ import random
 useRandomResults = False
 
 # default U25, C25, F25, d10ms, t60s,
-# os.system("go run main.go -u wwwKenFMde")
-channelID = 'UC_dZp8bZipnjntBGLVHm6rw'
+channelID = 'UCL_f53ZEJxp8TtlOkHwMV9Q'
 filePath = 'output/channel-id-' + channelID + \
     '/channel-id-' + channelID+'-results.json'
-uValues = [10,15,25]
-cValues = [10,25,50]
-fValues = [10,15,25]
+uValues = [12,25,50]
+cValues = [25,50,100]
+fValues = [12,25,50]
 timeout = 30 # in seconds
 
 numOfTotalCalculations = len(uValues) * len(cValues) * len(fValues)
