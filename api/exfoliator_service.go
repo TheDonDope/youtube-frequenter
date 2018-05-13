@@ -292,6 +292,7 @@ func (impl ExfoliatorService) AnalyseChannelMetaInfo(channelMetaInfo *ChannelMet
 		dumpJSONBytes, dumpJSONBytesError := json.Marshal(channelMetaInfo)
 		HandleError(dumpJSONBytesError, "Error marshaling dump")
 		WriteToJSON(GetOutputDirectory()+"/"+GetCustomName()+"-dump.json", dumpJSONBytes)
+		Printfln("#Results: %d", len(relatedChannelIDToNumberOfOccurrences))
 	}
 }
 
