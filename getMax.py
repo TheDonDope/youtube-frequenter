@@ -7,7 +7,7 @@ import random
 useRandomResults = False
 
 # default U25, C25, F25, d10ms, t60s,
-channelID = 'UCL_f53ZEJxp8TtlOkHwMV9Q'
+channelID = 'UCCj956IF62FbT7Gouszaj9w'
 filePath = 'output/channel-id-' + channelID + \
     '/channel-id-' + channelID+'-results.json'
 uValues = [12,25,50]
