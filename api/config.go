@@ -56,14 +56,15 @@ func ConfigureOutput() {
 
 // GetCustomName returns the custom file/directory name
 func GetCustomName() string {
+	result := ""
 	if Opts.ChannelID != "" {
-		return "channel-id-" + Opts.ChannelID
+		result = "channel-id-" + Opts.ChannelID
 	} else if Opts.CustomURL != "" {
-		return "custom-url-" + Opts.CustomURL
+		result = "custom-url-" + Opts.CustomURL
 	} else if Opts.PlaylistID != "" {
-		return "playlist-id-" + Opts.PlaylistID
+		result = "playlist-id-" + Opts.PlaylistID
 	}
-	return ""
+	return result
 }
 
 // GetOutputDirectory returns the complete path to the output directory

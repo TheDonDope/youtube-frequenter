@@ -16,6 +16,6 @@ type YouTuber interface {
 	// VideosList returns the result of the Videos.list API call
 	VideosList(service *youtube.Service, videoIDs string) (*youtube.VideoListResponse, error)
 
-	// GetService returns a service to interact with the YouTube API
+	// GetServicecd returns a service to interact with the YouTube API
 	GetService() (*youtube.Service, error)
 }

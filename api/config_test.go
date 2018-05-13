@@ -2,7 +2,6 @@ package api
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"testing"
 )
@@ -77,20 +76,21 @@ func TestShouldConfigureLoggingWithChannelID(t *testing.T) {
 	// shortArgs
 	channelIDShortArguments := []string{"-c", expectedChannelID}
 	ParseArguments(channelIDShortArguments)
+	ConfigureOutput()
 	ConfigureLogging()
-	log.Println("hello")
-	if _, err := os.Stat("logs/channel-id-" + expectedChannelID + ".log"); os.IsNotExist(err) {
+	if _, err := os.Stat(GetOutputDirectory() + "/channel-id-" + expectedChannelID + ".log"); os.IsNotExist(err) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithChannelID", "Log file created.", err.Error()))
 	}
 	// longArgs
 	channelIDLongArguments := []string{"--channel-id", expectedChannelID}
 	ParseArguments(channelIDLongArguments)
+	ConfigureOutput()
 	ConfigureLogging()
-	if _, err := os.Stat("logs/channel-id-" + expectedChannelID + ".log"); os.IsNotExist(err) {
+	if _, err := os.Stat(GetOutputDirectory() + "/channel-id-" + expectedChannelID + ".log"); os.IsNotExist(err) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithChannelID", "Log file created.", err.Error()))
 	}
 	Opts = originalOpts
-	os.RemoveAll("logs")
+	os.RemoveAll(Opts.OutputDirectory)
 }
 
 func TestShouldConfigureLoggingWithCustomURL(t *testing.T) {
@@ -98,20 +98,21 @@ func TestShouldConfigureLoggingWithCustomURL(t *testing.T) {
 	// shortArgs
 	customURLShortArguments := []string{"-u", expectedCustomURL}
 	ParseArguments(customURLShortArguments)
+	ConfigureOutput()
 	ConfigureLogging()
-	log.Println("hello")
-	if _, err := os.Stat("logs/custom-url-" + expectedCustomURL + ".log"); os.IsNotExist(err) {
+	if _, err := os.Stat(GetOutputDirectory() + "/custom-url-" + expectedCustomURL + ".log"); os.IsNotExist(err) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithCustomURL", "Log file created.", err.Error()))
 	}
 	// longArgs
 	customURLLongArguments := []string{"--custom-url", expectedCustomURL}
 	ParseArguments(customURLLongArguments)
+	ConfigureOutput()
 	ConfigureLogging()
-	if _, err := os.Stat("logs/custom-url-" + expectedCustomURL + ".log"); os.IsNotExist(err) {
+	if _, err := os.Stat(GetOutputDirectory() + "/custom-url-" + expectedCustomURL + ".log"); os.IsNotExist(err) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithCustomURL", "Log file created.", err.Error()))
 	}
 	Opts = originalOpts
-	os.RemoveAll("logs")
+	os.RemoveAll(Opts.OutputDirectory)
 }
 
 func TestShouldConfigureLoggingWithPlaylistID(t *testing.T) {
@@ -119,18 +120,19 @@ func TestShouldConfigureLoggingWithPlaylistID(t *testing.T) {
 	// shortArgs
 	playlistIDShortArguments := []string{"-p", expectedPlaylistID}
 	ParseArguments(playlistIDShortArguments)
+	ConfigureOutput()
 	ConfigureLogging()
-	log.Println("hello")
-	if _, err := os.Stat("logs/playlist-id-" + expectedPlaylistID + ".log"); os.IsNotExist(err) {
+	if _, err := os.Stat(GetOutputDirectory() + "/playlist-id-" + expectedPlaylistID + ".log"); os.IsNotExist(err) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithPlaylistID", "Log file created.", err.Error()))
 	}
 	// longArgs
 	playlistIDLongArguments := []string{"--playlist-id", expectedPlaylistID}
 	ParseArguments(playlistIDLongArguments)
+	ConfigureOutput()
 	ConfigureLogging()
-	if _, err := os.Stat("logs/playlist-id-" + expectedPlaylistID + ".log"); os.IsNotExist(err) {
+	if _, err := os.Stat(GetOutputDirectory() + "/playlist-id-" + expectedPlaylistID + ".log"); os.IsNotExist(err) {
 		t.Errorf(GetFormattedFailMessage("ShouldConfigureLoggingWithPlaylistID", "Log file created.", err.Error()))
 	}
 	Opts = originalOpts
-	os.RemoveAll("logs")
+	os.RemoveAll(Opts.OutputDirectory)
 }
