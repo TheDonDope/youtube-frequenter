@@ -9,12 +9,15 @@ useRandomResults = False
 # default U25, C25, F25, d10ms, t60s,
 # os.system("go run main.go -u wwwKenFMde")
 customURL = 'wwwKenFMde'
-filePath = 'results.json'
-# filePath = 'results/custom-url-' + customURL+'/custom-url-results.json'
-uValues = [25,50]
-cValues = [10,50]
-fValues = [25,50]
+filePath = 'results/custom-url-' + customURL + \
+    '/custom-url-' + customURL+'-results.json'
+uValues = [10,15,25,50]
+cValues = [10,25,50]
+fValues = [10,15,25,50]
+timeout = 10 # in seconds
 
+numOfTotalCalculations = len(uValues) * len(cValues) * len(fValues)
+numOfCurrentCalculation = 1
 resulting3DArray = []
 bestRun = ''
 highestCount = 1
@@ -22,13 +25,14 @@ highestCount = 1
 for U in uValues:
   for C in cValues:
     for F in fValues:
+      print('['+str(numOfCurrentCalculation)+'/'+str(numOfTotalCalculations)+']')
       if useRandomResults:
         R = random.randint(0, 10000)
         if R > highestCount:
           highestCount = R
         resulting3DArray.append((U, C, F, R))
       else:
-        commandline = 'go run main.go -u wwwKenFMde -U ' +str(U)+' -C '+str(C)+' -F '+str(F)+' -t 60s -o results> /dev/null'
+        commandline = 'go run main.go -u wwwKenFMde -U ' +str(U)+' -C '+str(C)+' -F '+str(F)+' -t '+str(timeout)+'s -o results> /dev/null'
         print(commandline)
         os.system(commandline)
         sorted_results = []
@@ -39,9 +43,9 @@ for U in uValues:
         if resultCount > highestCount:
           highestCount = resultCount
           bestRun = commandline
-          print('new highest resultCount:'+str(highestCount))
-        else:
-          print(resultCount)
+        print("resultcount:"+str(resultCount)+' ,highest resultcount:'+str(highestCount))
+      numOfCurrentCalculation += 1
+
 
 
 print('bestRun:' + bestRun)
@@ -49,8 +53,9 @@ fig = matplotlib.pyplot.figure()
 ax = fig.add_subplot(111, projection='3d')
 for u, c, f, r in resulting3DArray:
   if r > 0:
-    ax.scatter(u, c, f, color='g', alpha=1. * r / highestCount)
-ax.set_xlabel('U')
-ax.set_ylabel('C')
-ax.set_zlabel('F')
+    ax.scatter(u, c, f, s=(1.*r)/highestCount*1000, color='g',
+               alpha=(1.*r)/ highestCount)
+ax.set_xlabel('max uploads')
+ax.set_ylabel('max comments')
+ax.set_zlabel('max favorite')
 show()
