@@ -282,7 +282,7 @@ func (impl ExfoliatorService) AnalyseChannelMetaInfo(channelMetaInfo *ChannelMet
 	if len(relatedChannelIDToNumberOfOccurrences) == 0 {
 		log.Println("Package to analyse has no ObviouslyRelatedChannelIDs to count.")
 	} else {
-		sortedRelatedChannelIDsList := RankByWordCount(relatedChannelIDToNumberOfOccurrences)
+		sortedRelatedChannelIDsList := MapEntryList{}.RankByWordCount(relatedChannelIDToNumberOfOccurrences)
 
 		resultJSONBytes, resultJSONBytesError := json.Marshal(sortedRelatedChannelIDsList)
 		HandleError(resultJSONBytesError, "Error marshaling results")
