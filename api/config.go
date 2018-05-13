@@ -38,7 +38,7 @@ func ParseArguments(args []string) {
 }
 
 // ConfigureLogging configures the logging
-func ConfigureLogging() {
+func ConfigureLogging() *os.File {
 	logFileName := GetCustomName() + ".log"
 	logFile, logFileError := os.OpenFile(GetOutputDirectory()+"/"+logFileName, os.O_WRONLY|os.O_CREATE, 0644)
 	HandleError(logFileError, "LogFileError!")
@@ -46,7 +46,7 @@ func ConfigureLogging() {
 	//set output of logs to f
 	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 	//defer to close when you're done with it, not because you think it's idiomatic!
-	defer logFile.Close()
+	return logFile
 }
 
 // ConfigureOutput creates the necessary output folders

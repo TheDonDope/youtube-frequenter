@@ -12,7 +12,8 @@ import (
 func main() {
 	api.ParseArguments(os.Args)
 	api.ConfigureOutput()
-	api.ConfigureLogging()
+	logFile := api.ConfigureLogging()
+	defer logFile.Close()
 
 	start := time.Now()
 	api.Printfln("Starting youtube-tinfoil-expose @ %v", start.Format(time.RFC3339))
