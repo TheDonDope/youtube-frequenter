@@ -15,13 +15,14 @@ func GetFormattedFailMessage(what string, expected string, actual string) string
 // GetFormattedErrorMessage returns a formatted error message for the given
 // errorToHandle and errorMessage.
 func GetFormattedErrorMessage(errorToHandle error, errorMessage string) string {
+	result := ""
 	if errorMessage == "" {
 		errorMessage = "Error making API call"
 	}
 	if errorToHandle != nil {
-		return fmt.Sprintf(errorMessage+": %v", errorToHandle.Error())
+		result = fmt.Sprintf(errorMessage+": %v", errorToHandle.Error())
 	}
-	return ""
+	return result
 }
 
 // HandleError handles the given error
