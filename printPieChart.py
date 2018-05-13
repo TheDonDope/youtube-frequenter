@@ -13,7 +13,7 @@ def draw_piechart(inc_list):
     for elem in draw_list:
         labels = labels + (elem['key']+' '+str(elem['value']),)
         sizes.append(elem['value'])
-    fig1, ax1 = plt.subplots()
+    _, ax1 = plt.subplots()
     ax1.pie(sizes, labels=labels, autopct='%1.1f%%',
             shadow=False, startangle=90)
     ax1.axis('equal')
