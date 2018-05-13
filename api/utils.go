@@ -3,6 +3,7 @@ package api
 import (
 	"fmt"
 	"log"
+	"os"
 	"sort"
 )
 
@@ -35,6 +36,18 @@ func Printfln(format string, a ...interface{}) {
 	log.Println(fmt.Sprintf(format, a))
 }
 
+// WriteToJSON writes the given jsonBytes as a json for the given path
+func WriteToJSON(path string, jsonBytes []byte) {
+	if _, err := os.Stat(path); err == nil {
+		os.Remove(path)
+	}
+
+	jsonFile, jsonFileError := os.OpenFile(path, os.O_WRONLY|os.O_CREATE, 0644)
+	defer jsonFile.Close()
+	HandleError(jsonFileError, "Error opening JSON file for path: "+path)
+	jsonFile.Write(jsonBytes)
+}
+
 // CountOccurrences returns a map with the string value as key, and the number of occurences as value.
 func CountOccurrences(stringSlice []string) map[string]int {
 	elementToFrequencyMap := make(map[string]int)
@@ -62,6 +75,11 @@ func RankByWordCount(wordFrequencies map[string]int) MapEntryList {
 	}
 	sort.Sort(sort.Reverse(mapEntryList))
 	return mapEntryList
+}
+
+// String implements the String interface method String for the MapEntry type
+func (p MapEntry) String() string {
+	return fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", p.Key, p.Value)
 }
 
 // Len implements the Sort interface method Len for the MapEntryList type

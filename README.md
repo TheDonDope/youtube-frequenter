@@ -2,9 +2,19 @@
 
 Exfoliate!
 
-## pewdiepie channel_id
+## Example input data
 
-https://www.youtube.com/channel/UC-lHJZR3Gqxm24_Vd_AJ5Yw
+### `channelID`
+
+- pewdiepie: `UC-lHJZR3Gqxm24_Vd_AJ5Yw`
+
+### `customURL`
+
+- wwwKenFMde
+
+### `playlistID`
+
+- Breaking Bad Soundtrack: `PLkUhiWFEpuqoqQDugpSZE-sFiiHwz1FBU`
 
 ## Vocabulary
 
