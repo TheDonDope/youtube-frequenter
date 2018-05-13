@@ -2,6 +2,7 @@ package api
 
 import (
 	"fmt"
+	"strconv"
 	"testing"
 )
 
@@ -28,5 +29,15 @@ func TestNextOperationStringer(t *testing.T) {
 	var positiveUnknownOperation NextOperation = 5
 	if positiveUnknownString := fmt.Sprint(positiveUnknownOperation); positiveUnknownString != "Unknown" {
 		t.Errorf(GetFormattedFailMessage("PositiveUnknownOperation", "Unknow", positiveUnknownString))
+	}
+}
+
+func TestMapEntryStringer(t *testing.T) {
+	keyInput := "Foo"
+	valueInput := 42
+	inputMapEntry := &MapEntry{Key: keyInput, Value: valueInput}
+	expectedResult := "Related ChannelID: " + keyInput + ", Number of Occurrences: " + strconv.Itoa(valueInput)
+	if actualResult := fmt.Sprint(inputMapEntry); actualResult != expectedResult {
+		t.Errorf(GetFormattedFailMessage("MapEntryStringer", expectedResult, actualResult))
 	}
 }
