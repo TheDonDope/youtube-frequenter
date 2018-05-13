@@ -14,10 +14,10 @@ filePath = 'output/channel-id-' + channelID + \
 uValues = [10,15,25]
 cValues = [10,25,50]
 fValues = [10,15,25]
-timeout = 100 # in seconds
+timeout = 30 # in seconds
 
 numOfTotalCalculations = len(uValues) * len(cValues) * len(fValues)
-timeoutPerCalculation = timeout/numOfTotalCalculations
+timeoutPerCalculation = timeout
 numOfCurrentCalculation = 1
 resulting3DArray = []
 bestRun = ''
