@@ -18,11 +18,11 @@ import (
 	"golang.org/x/oauth2/google"
 )
 
-// YouTubeServiceImpl implements a real YouTube API implementation
-type YouTubeServiceImpl struct{}
+// YouTuberService implements a real YouTube API implementation
+type YouTuberService struct{}
 
 // ChannelsList returns the result of the Channels.list API call
-func (impl YouTubeServiceImpl) ChannelsList(service *youtube.Service, channelID string, customURL string) (*youtube.ChannelListResponse, error) {
+func (impl YouTuberService) ChannelsList(service *youtube.Service, channelID string, customURL string) (*youtube.ChannelListResponse, error) {
 	call := service.Channels.List("contentDetails,snippet,statistics")
 	if channelID != "" {
 		call = call.Id(channelID)
@@ -33,7 +33,7 @@ func (impl YouTubeServiceImpl) ChannelsList(service *youtube.Service, channelID 
 }
 
 // PlaylistItemsList returns the result of the PlaylistItems.list API call
-func (impl YouTubeServiceImpl) PlaylistItemsList(service *youtube.Service, playlistID string, playlistName string) (*youtube.PlaylistItemListResponse, error) {
+func (impl YouTuberService) PlaylistItemsList(service *youtube.Service, playlistID string, playlistName string) (*youtube.PlaylistItemListResponse, error) {
 	call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(playlistID)
 	if playlistName == "uploads" {
 		call = call.MaxResults(Opts.MaxResultsUploadedVideos)
@@ -44,17 +44,17 @@ func (impl YouTubeServiceImpl) PlaylistItemsList(service *youtube.Service, playl
 }
 
 // CommentThreadsList returns the result of the CommentThreads.list API call
-func (impl YouTubeServiceImpl) CommentThreadsList(service *youtube.Service, videoID string) (*youtube.CommentThreadListResponse, error) {
+func (impl YouTuberService) CommentThreadsList(service *youtube.Service, videoID string) (*youtube.CommentThreadListResponse, error) {
 	return service.CommentThreads.List("snippet").VideoId(videoID).MaxResults(Opts.MaxResultsCommentPerVideo).Do()
 }
 
 // VideosList returns the result of the Videos.list API call
-func (impl YouTubeServiceImpl) VideosList(service *youtube.Service, videoIDs string) (*youtube.VideoListResponse, error) {
+func (impl YouTuberService) VideosList(service *youtube.Service, videoIDs string) (*youtube.VideoListResponse, error) {
 	return service.Videos.List("snippet").Id(videoIDs).Do()
 }
 
-// GetYouTubeService returns a service to interact with the YouTube API
-func (impl YouTubeServiceImpl) GetYouTubeService() (*youtube.Service, error) {
+// GetService returns a service to interact with the YouTube API
+func (impl YouTuberService) GetService() (*youtube.Service, error) {
 	backgroundContext := context.Background()
 
 	readBytes, readError := ioutil.ReadFile("client_secret.json")

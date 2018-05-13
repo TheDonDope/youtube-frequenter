@@ -2,8 +2,8 @@ package api
 
 import youtube "google.golang.org/api/youtube/v3"
 
-// YouTubeService describes methods to interact with the YouTube API
-type YouTubeService interface {
+// YouTuber describes methods to interact with the YouTube API
+type YouTuber interface {
 	// ChannelsList returns the result of the Channels.list API call
 	ChannelsList(service *youtube.Service, channelID string, customURL string) (*youtube.ChannelListResponse, error)
 
@@ -16,6 +16,6 @@ type YouTubeService interface {
 	// VideosList returns the result of the Videos.list API call
 	VideosList(service *youtube.Service, videoIDs string) (*youtube.VideoListResponse, error)
 
-	// GetYouTubeService returns a service to interact with the YouTube API
-	GetYouTubeService() (*youtube.Service, error)
+	// GetService returns a service to interact with the YouTube API
+	GetService() (*youtube.Service, error)
 }

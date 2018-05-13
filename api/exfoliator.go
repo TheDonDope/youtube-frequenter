@@ -1,74 +1,36 @@
 package api
 
-import (
-	"encoding/json"
-	"log"
-	"time"
+import youtube "google.golang.org/api/youtube/v3"
 
-	"google.golang.org/api/youtube/v3"
-)
+// Exfoliator describes methods to interact with the exfoliator api
+type Exfoliator interface {
 
-// Exfoliator exfoliates
-func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo {
-	monoChannel := make(chan ChannelMetaInfo)
-	lastButNotLeastChannel := make(chan ChannelMetaInfo)
-	accumulatedMetaInfo := ChannelMetaInfo{}
-	accumulatedMetaInfo.CustomURL = channelMetaInfo.CustomURL
-	accumulatedMetaInfo.ChannelID = channelMetaInfo.ChannelID
-	accumulatedMetaInfo.Playlists = channelMetaInfo.Playlists
-	serviceImpl := &YouTubeServiceImpl{}
-	go func() {
-		monoChannel <- channelMetaInfo
-	}()
-	go GetChannelOverview(service, serviceImpl, monoChannel)
-	go GetVideoIDsOverview(service, serviceImpl, monoChannel)
-	go GetCommentsOverview(service, serviceImpl, monoChannel)
-	go GetObviouslyRelatedChannelsOverview(service, serviceImpl, monoChannel, lastButNotLeastChannel)
+	// GetChannelOverview implements a Search which fills the most basic info about a channel.
+	// To use the method simply pass a ChannelMetaInfo with either the ChannelID or CustomURL set.
+	// On search completion the following attributes will be filled, if not already set:
+	// - ChannelID
+	// - CustomURL
+	// - ChannelName
+	// - Playlists (With their PlaylistID and PlaylistName)
+	// - SubscriberCount
+	// - ViewCount
+	GetChannelOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo)
 
-	globalTimeout, globalTimeoutError := time.ParseDuration(Opts.GlobalTimeout)
-	if globalTimeoutError != nil {
-		log.Println(globalTimeoutError)
-	}
-	timeout := time.After(globalTimeout)
-	for {
-		log.Println("<<<<<Begin Exfoliator Main Loop")
-		select {
-		case channelMetaInfo = <-lastButNotLeastChannel:
-			log.Println("<-- (5/5): Exfoliator")
-			log.Println("<-> (5/5): Working in Exfoliator")
-			// evtl die anderen properties adden
-			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
-			log.Println("--> (5/5): Exfoliator")
-		case <-timeout:
-			Printfln("Request timed out (%v)", Opts.GlobalTimeout)
-			return accumulatedMetaInfo
-		}
-	}
-}
+	// GetVideoIDsOverview gets all videos.
+	GetVideoIDsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo)
 
-// AnalyseChannelMetaInfo prints additional information for a given channelMetaInfo.
-func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
-	relatedChannelIDToNumberOfOccurrences := CountOccurrences(channelMetaInfo.ObviouslyRelatedChannelIDs)
+	// GetCommentsOverview returns the overview over the comments
+	GetCommentsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo)
 
-	if len(relatedChannelIDToNumberOfOccurrences) == 0 {
-		log.Println("Package to analyse has no ObviouslyRelatedChannelIDs to count.")
-	} else {
-		sortedRelatedChannelIDsList := RankByWordCount(relatedChannelIDToNumberOfOccurrences)
+	// GetObviouslyRelatedChannelsOverview gets the related channels for a YouTube channel
+	GetObviouslyRelatedChannelsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo, lastButNotLeastChannel chan ChannelMetaInfo)
 
-		resultJSONBytes, resultJSONBytesError := json.Marshal(sortedRelatedChannelIDsList)
-		HandleError(resultJSONBytesError, "Error marshaling results")
-		WriteToJSON(GetOutputDirectory()+"/"+GetCustomName()+"-results.json", resultJSONBytes)
-		printResults(sortedRelatedChannelIDsList)
+	// CreateInitialChannelMetaInfo creates the initial request context
+	CreateInitialChannelMetaInfo() ChannelMetaInfo
 
-		dumpJSONBytes, dumpJSONBytesError := json.Marshal(channelMetaInfo)
-		HandleError(dumpJSONBytesError, "Error marshaling dump")
-		WriteToJSON(GetOutputDirectory()+"/"+GetCustomName()+"-dump.json", dumpJSONBytes)
-	}
-}
+	// Exfoliate returns the result
+	Exfoliate(service *youtube.Service, serviceImpl YouTuber, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo
 
-// printResults prints the results
-func printResults(results MapEntryList) {
-	for _, item := range results {
-		log.Println(item)
-	}
+	// AnalyseChannelMetaInfo prints additional information for a given channelMetaInfo.
+	AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo)
 }
