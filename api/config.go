@@ -25,6 +25,8 @@ var Opts struct {
 	AverageAPICallDuration string `short:"d" long:"average-api-call-duration" description:"The duration we estimate to average for a single API call (default: 10ms, format: 1h10m10s)" default:"10ms"`
 
 	GlobalTimeout string `short:"t" long:"global-timeout" description:"The timeout for the complete program (default: 60sec, format: 1h10m10s)" default:"60s"`
+
+	OutputDirectory string `short:"o" long:"output-directory" description:"The output directory for the log file, results.json and dump.json (default: output)" default:"output"`
 }
 
 // ParseArguments parses the program arguments
@@ -37,22 +39,34 @@ func ParseArguments(args []string) {
 
 // ConfigureLogging configures the logging
 func ConfigureLogging() {
-	//create your file with desired read/write permissions
-	var logFileName string
-	if Opts.ChannelID != "" {
-		logFileName = "channel-id-" + Opts.ChannelID
-	} else if Opts.CustomURL != "" {
-		logFileName = "custom-url-" + Opts.CustomURL
-	} else if Opts.PlaylistID != "" {
-		logFileName = "playlist-id-" + Opts.PlaylistID
-	}
-	logFileName = logFileName + ".log"
-	os.MkdirAll("logs", 0700)
-	logFile, logFileError := os.OpenFile("logs/"+logFileName, os.O_WRONLY|os.O_CREATE, 0644)
+	logFileName := GetCustomName() + ".log"
+	logFile, logFileError := os.OpenFile(GetOutputDirectory()+"/"+logFileName, os.O_WRONLY|os.O_CREATE, 0644)
 	HandleError(logFileError, "LogFileError!")
 
 	//set output of logs to f
 	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
 	//defer to close when you're done with it, not because you think it's idiomatic!
 	defer logFile.Close()
+}
+
+// ConfigureOutput creates the necessary output folders
+func ConfigureOutput() {
+	os.MkdirAll(Opts.OutputDirectory+"/"+GetCustomName(), 0700)
+}
+
+// GetCustomName returns the custom file/directory name
+func GetCustomName() string {
+	if Opts.ChannelID != "" {
+		return "channel-id-" + Opts.ChannelID
+	} else if Opts.CustomURL != "" {
+		return "custom-url-" + Opts.CustomURL
+	} else if Opts.PlaylistID != "" {
+		return "playlist-id-" + Opts.PlaylistID
+	}
+	return ""
+}
+
+// GetOutputDirectory returns the complete path to the output directory
+func GetOutputDirectory() string {
+	return Opts.OutputDirectory + "/" + GetCustomName()
 }

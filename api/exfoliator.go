@@ -2,9 +2,7 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"google.golang.org/api/youtube/v3"
@@ -55,22 +53,20 @@ func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
 		log.Println("Package to analyse has no ObviouslyRelatedChannelIDs to count.")
 	} else {
 		sortedRelatedChannelIDsList := RankByWordCount(relatedChannelIDToNumberOfOccurrences)
-		jsonString, jsonError := json.Marshal(sortedRelatedChannelIDsList)
-		if jsonError != nil {
-			log.Println(jsonError)
-		}
 
-		if _, err := os.Stat("results.json"); err == nil {
-			os.Remove("results.json")
-		}
+		resultJSONBytes, resultJSONBytesError := json.Marshal(sortedRelatedChannelIDsList)
+		HandleError(resultJSONBytesError, "Error marshaling results")
+		WriteToJSON(GetOutputDirectory()+"/"+GetCustomName()+"-results.json", resultJSONBytes)
+		printResults(sortedRelatedChannelIDsList)
 
-		jsonFile, jsonFileError := os.OpenFile("results.json", os.O_WRONLY|os.O_CREATE, 0644)
-		defer jsonFile.Close()
-		HandleError(jsonFileError, "JSON File error")
-		jsonFile.Write(jsonString)
+		dumpJSONBytes, dumpJSONBytesError := json.Marshal(channelMetaInfo)
+		HandleError(dumpJSONBytesError, "Error marshaling dump")
+		WriteToJSON(GetOutputDirectory()+"/"+GetCustomName()+"-dump.json", dumpJSONBytes)
+	}
+}
 
-		for _, item := range sortedRelatedChannelIDsList {
-			log.Println(fmt.Sprintf("Related ChannelID: %v, Number of Occurrences: %v", item.Key, item.Value))
-		}
+func printResults(results MapEntryList) {
+	for _, item := range results {
+		log.Println(item)
 	}
 }

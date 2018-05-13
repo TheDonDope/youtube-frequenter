@@ -11,6 +11,7 @@ import (
 
 func main() {
 	api.ParseArguments(os.Args)
+	api.ConfigureOutput()
 	api.ConfigureLogging()
 
 	start := time.Now()

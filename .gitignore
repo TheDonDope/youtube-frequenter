@@ -229,5 +229,6 @@ $RECYCLE.BIN/
 # Results File
 results.json
 
-# Logs
-logs/*
+# results
+output/*
+
