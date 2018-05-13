@@ -37,6 +37,7 @@ func TestShouldParseWithDefaultValues(t *testing.T) {
 		t.Errorf(GetFormattedFailMessage("ShouldParseWithDefaultValues#GlobalTimeout", expectedGlobalTimeout, actualGlobalTimeout))
 	}
 	Opts = originalOpts
+	os.RemoveAll(Opts.OutputDirectory)
 }
 
 func TestShouldParseShortArguments(t *testing.T) {
@@ -53,6 +54,7 @@ func TestShouldParseShortArguments(t *testing.T) {
 		t.Errorf(GetFormattedFailMessage("ShouldParseShortArguments#PlaylistID", expectedPlaylistID, actualPlaylistID))
 	}
 	Opts = originalOpts
+	os.RemoveAll(Opts.OutputDirectory)
 }
 
 func TestShouldParseLongArguments(t *testing.T) {
@@ -69,6 +71,7 @@ func TestShouldParseLongArguments(t *testing.T) {
 		t.Errorf(GetFormattedFailMessage("ShouldParseLongArguments#PlaylistID", expectedPlaylistID, actualPlaylistID))
 	}
 	Opts = originalOpts
+	os.RemoveAll(Opts.OutputDirectory)
 }
 
 func TestShouldConfigureLoggingWithChannelID(t *testing.T) {
