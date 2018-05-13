@@ -8,15 +8,16 @@ useRandomResults = False
 
 # default U25, C25, F25, d10ms, t60s,
 # os.system("go run main.go -u wwwKenFMde")
-customURL = 'wwwKenFMde'
-filePath = 'results/custom-url-' + customURL + \
-    '/custom-url-' + customURL+'-results.json'
-uValues = [10,15,25,50]
+channelID = 'UC_dZp8bZipnjntBGLVHm6rw'
+filePath = 'output/channel-id-' + channelID + \
+    '/channel-id-' + channelID+'-results.json'
+uValues = [10,15,25]
 cValues = [10,25,50]
-fValues = [10,15,25,50]
-timeout = 10 # in seconds
+fValues = [10,15,25]
+timeout = 100 # in seconds
 
 numOfTotalCalculations = len(uValues) * len(cValues) * len(fValues)
+timeoutPerCalculation = timeout/numOfTotalCalculations
 numOfCurrentCalculation = 1
 resulting3DArray = []
 bestRun = ''
@@ -32,7 +33,9 @@ for U in uValues:
           highestCount = R
         resulting3DArray.append((U, C, F, R))
       else:
-        commandline = 'go run main.go -u wwwKenFMde -U ' +str(U)+' -C '+str(C)+' -F '+str(F)+' -t '+str(timeout)+'s -o results> /dev/null'
+        commandline = 'go run main.go -c '+channelID+' -U ' + \
+            str(U)+' -C '+str(C)+' -F '+str(F)+' -t ' + \
+            str(timeoutPerCalculation)+'s > /dev/null'
         print(commandline)
         os.system(commandline)
         sorted_results = []
