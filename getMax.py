@@ -4,12 +4,16 @@ from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.pyplot import *
 import random
 
+useRandomResults = False
+
 # default U25, C25, F25, d10ms, t60s,
 # os.system("go run main.go -u wwwKenFMde")
-
-uValues = [5,10,25,50]
-cValues = [5,10,25,50,75,100]
-fValues = [5,10,25,50]
+customURL = 'wwwKenFMde'
+filePath = 'results.json'
+# filePath = 'results/custom-url-' + customURL+'/custom-url-results.json'
+uValues = [25,50]
+cValues = [10,50]
+fValues = [25,50]
 
 resulting3DArray = []
 bestRun = ''
@@ -18,12 +22,17 @@ highestCount = 1
 for U in uValues:
   for C in cValues:
     for F in fValues:
-      if False:
-        commandline = 'go run main.go -u wwwKenFMde -U ' +str(U)+' -C '+str(C)+' -F '+str(F)+' -t 60s > /dev/null'
+      if useRandomResults:
+        R = random.randint(0, 10000)
+        if R > highestCount:
+          highestCount = R
+        resulting3DArray.append((U, C, F, R))
+      else:
+        commandline = 'go run main.go -u wwwKenFMde -U ' +str(U)+' -C '+str(C)+' -F '+str(F)+' -t 60s -o results> /dev/null'
         print(commandline)
         os.system(commandline)
         sorted_results = []
-        with open('results.json') as f:
+        with open(filePath) as f:
           sorted_results = json.load(f)
         resultCount = len(sorted_results)
         resulting3DArray.append((U, C, F, resultCount))
@@ -33,11 +42,7 @@ for U in uValues:
           print('new highest resultCount:'+str(highestCount))
         else:
           print(resultCount)
-      else:
-        R = random.randint(0, 10000)
-        if R > highestCount:
-          highestCount = R
-        resulting3DArray.append((U, C, F, R))
+
 
 print('bestRun:' + bestRun)
 fig = matplotlib.pyplot.figure()
