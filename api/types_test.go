@@ -84,3 +84,20 @@ func TestMapEntrySwap(t *testing.T) {
 		t.Errorf(GetFormattedFailMessage("MapEntryList#swap", oneEntry.Key, actualSecondElement.Key))
 	}
 }
+
+func TestRankByWordCount(t *testing.T) {
+	inputMap := make(map[string]int)
+	oneEntry := MapEntry{Key: "wwwKenFMde", Value: 420}
+	anotherEntry := MapEntry{Key: "nuovisoTV", Value: 62}
+
+	inputMap[oneEntry.Key] = oneEntry.Value
+	inputMap[anotherEntry.Key] = anotherEntry.Value
+
+	expectedResult := MapEntryList{anotherEntry, oneEntry}
+	expectedFirstElement := expectedResult[1]
+	actualFirstElement := MapEntryList{}.RankByWordCount(inputMap)[0]
+
+	if actualFirstElement != expectedFirstElement {
+		t.Errorf(GetFormattedFailMessage("MapEntryList#RankByWordCount", expectedFirstElement.Key, actualFirstElement.Key))
+	}
+}
