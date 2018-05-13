@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"time"
 
 	"github.com/TheDonDope/youtube-tinfoil-expose/api"
 )
 
 func main() {
-	api.ParseArguments()
+	api.ParseArguments(os.Args)
 	api.ConfigureLogging()
 
 	start := time.Now()

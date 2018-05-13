@@ -28,8 +28,8 @@ var Opts struct {
 }
 
 // ParseArguments parses the program arguments
-func ParseArguments() {
-	_, argsError := flags.ParseArgs(&Opts, os.Args)
+func ParseArguments(args []string) {
+	_, argsError := flags.ParseArgs(&Opts, args)
 	if argsError != nil {
 		panic(argsError)
 	}
