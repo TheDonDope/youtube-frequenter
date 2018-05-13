@@ -17,7 +17,9 @@ func main() {
 	start := time.Now()
 	api.Printfln("Starting youtube-tinfoil-expose @ %v", start.Format(time.RFC3339))
 
-	youtubeService, serviceError := api.GetYouTubeService()
+	serviceImpl := &api.YouTubeServiceImpl{}
+
+	youtubeService, serviceError := serviceImpl.GetYouTubeService()
 	if serviceError != nil {
 		formattdErrorMessage := api.GetFormattedErrorMessage(serviceError, "Error creating YouTube client")
 		if formattdErrorMessage != "" {

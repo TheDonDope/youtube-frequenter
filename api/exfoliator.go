@@ -16,13 +16,14 @@ func Exfoliator(service *youtube.Service, channelMetaInfo ChannelMetaInfo) Chann
 	accumulatedMetaInfo.CustomURL = channelMetaInfo.CustomURL
 	accumulatedMetaInfo.ChannelID = channelMetaInfo.ChannelID
 	accumulatedMetaInfo.Playlists = channelMetaInfo.Playlists
+	serviceImpl := &YouTubeServiceImpl{}
 	go func() {
 		monoChannel <- channelMetaInfo
 	}()
-	go GetChannelOverview(service, monoChannel)
-	go GetVideoIDsOverview(service, monoChannel)
-	go GetCommentsOverview(service, monoChannel)
-	go GetObviouslyRelatedChannelsOverview(service, monoChannel, lastButNotLeastChannel)
+	go GetChannelOverview(service, serviceImpl, monoChannel)
+	go GetVideoIDsOverview(service, serviceImpl, monoChannel)
+	go GetCommentsOverview(service, serviceImpl, monoChannel)
+	go GetObviouslyRelatedChannelsOverview(service, serviceImpl, monoChannel, lastButNotLeastChannel)
 
 	globalTimeout, globalTimeoutError := time.ParseDuration(Opts.GlobalTimeout)
 	if globalTimeoutError != nil {
@@ -65,6 +66,7 @@ func AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo) {
 	}
 }
 
+// printResults prints the results
 func printResults(results MapEntryList) {
 	for _, item := range results {
 		log.Println(item)
