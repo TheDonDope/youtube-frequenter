@@ -1,4 +1,4 @@
-package services
+package api
 
 import (
 	"github.com/TheDonDope/youtube-frequenter/pkg/types"

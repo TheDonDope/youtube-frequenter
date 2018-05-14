@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/services"
+	"github.com/TheDonDope/youtube-frequenter/pkg/api"
 	"github.com/TheDonDope/youtube-frequenter/pkg/util/configs"
 	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 	"github.com/TheDonDope/youtube-frequenter/pkg/util/logs"
@@ -21,8 +21,8 @@ func main() {
 	start := time.Now()
 	logs.Printfln("Starting youtube-frequenter @ %v", start.Format(time.RFC3339))
 
-	serviceImpl := &services.YouTuberService{}
-	exfoliatorImpl := &services.ExfoliatorService{}
+	serviceImpl := &api.YouTuberService{}
+	exfoliatorImpl := &api.ExfoliatorService{}
 
 	youtubeService, serviceError := serviceImpl.GetService()
 	if serviceError != nil {
