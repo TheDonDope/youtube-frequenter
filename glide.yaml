@@ -1,4 +1,4 @@
-package: github.com/TheDonDope/youtube-tinfoil-expose
+package: github.com/TheDonDope/youtube-frequenter
 import:
 - package: google.golang.org/api
   subpackages:

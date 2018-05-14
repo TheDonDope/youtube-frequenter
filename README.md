@@ -1,6 +1,6 @@
-# Youtube Tinfoil Expose
+# YouTube Frequenter
 
-Exfoliate!
+YouTube Frequenter helps you discover related channels to a given channel or playlist.
 
 ## Example input data
 
@@ -10,7 +10,7 @@ Exfoliate!
 
 ### `customURL`
 
-- wwwKenFMde
+- NocturnoPlays
 
 ### `playlistID`
 
@@ -18,10 +18,12 @@ Exfoliate!
 
 ## Vocabulary
 
-- `channelId`:
+- `channelID`:
   - used in form [youtube.com/channel/UC52XYgEExV9VG6Rt-6vnzVA](https://www.youtube.com/channel/UC52XYgEExV9VG6Rt-6vnzVA)
-- `customUrl`:
+- `customURL`:
   - used in form [youtube.com/user/destiny](https://www.youtube.com/user/destiny)
+- `playlistID`:
+  - used in form [youtube.com/playlist/list?](https://www.youtube.com/playlist?list=PLkUhiWFEpuqoqQDugpSZE-sFiiHwz1FBU)
 
 ## API Calls
 

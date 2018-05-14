@@ -6,7 +6,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/TheDonDope/youtube-tinfoil-expose/api"
+	"github.com/TheDonDope/youtube-frequenter/api"
 )
 
 func main() {
@@ -16,7 +16,7 @@ func main() {
 	defer logFile.Close()
 
 	start := time.Now()
-	api.Printfln("Starting youtube-tinfoil-expose @ %v", start.Format(time.RFC3339))
+	api.Printfln("Starting youtube-frequenter @ %v", start.Format(time.RFC3339))
 
 	serviceImpl := &api.YouTuberService{}
 	exfoliatorImpl := &api.ExfoliatorService{}
@@ -36,6 +36,6 @@ func main() {
 	log.Println(fmt.Sprintf("#videos%v", len(results.ObviouslyRelatedChannelIDs)))
 	exfoliatorImpl.AnalyseChannelMetaInfo(&results)
 	api.Printfln("Program arguments: %+v", api.Opts)
-	api.Printfln("Finishing youtube-tinfoil-expose @ %v", time.Now().Format(time.RFC3339))
+	api.Printfln("Finishing youtube-frequenter @ %v", time.Now().Format(time.RFC3339))
 	api.Printfln("Overall time spent: %v", time.Since(start))
 }
