@@ -1,4 +1,4 @@
-package api
+package services
 
 import (
 	"context"
@@ -12,6 +12,9 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"github.com/TheDonDope/youtube-frequenter/pkg/util/configs"
+	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"github.com/TheDonDope/youtube-frequenter/pkg/util/logs"
 	"google.golang.org/api/youtube/v3"
 
 	"golang.org/x/oauth2"
@@ -36,16 +39,16 @@ func (impl YouTuberService) ChannelsList(service *youtube.Service, channelID str
 func (impl YouTuberService) PlaylistItemsList(service *youtube.Service, playlistID string, playlistName string) (*youtube.PlaylistItemListResponse, error) {
 	call := service.PlaylistItems.List("contentDetails,snippet").PlaylistId(playlistID)
 	if playlistName == "uploads" {
-		call = call.MaxResults(Opts.MaxResultsUploadedVideos)
+		call = call.MaxResults(configs.Opts.MaxResultsUploadedVideos)
 	} else if playlistName == "favorites" {
-		call = call.MaxResults(Opts.MaxResultsFavouritedVideos)
+		call = call.MaxResults(configs.Opts.MaxResultsFavouritedVideos)
 	}
 	return call.Do()
 }
 
 // CommentThreadsList returns the result of the CommentThreads.list API call
 func (impl YouTuberService) CommentThreadsList(service *youtube.Service, videoID string) (*youtube.CommentThreadListResponse, error) {
-	return service.CommentThreads.List("snippet").VideoId(videoID).MaxResults(Opts.MaxResultsCommentPerVideo).Do()
+	return service.CommentThreads.List("snippet").VideoId(videoID).MaxResults(configs.Opts.MaxResultsCommentPerVideo).Do()
 }
 
 // VideosList returns the result of the Videos.list API call
@@ -58,10 +61,10 @@ func (impl YouTuberService) GetService() (*youtube.Service, error) {
 	backgroundContext := context.Background()
 
 	readBytes, readError := ioutil.ReadFile("client_secret.json")
-	HandleError(readError, fmt.Sprintf("Unable to read client secret file: %v", readError))
+	errors.HandleError(readError, fmt.Sprintf("Unable to read client secret file: %v", readError))
 
 	configFromJSON, configError := google.ConfigFromJSON(readBytes, youtube.YoutubeForceSslScope)
-	HandleError(configError, fmt.Sprintf("Unable to parse client secret file to config: %v", configError))
+	errors.HandleError(configError, fmt.Sprintf("Unable to parse client secret file to config: %v", configError))
 	httpClient := getHTTPClient(backgroundContext, configFromJSON)
 
 	return youtube.New(httpClient)
@@ -72,7 +75,7 @@ func (impl YouTuberService) GetService() (*youtube.Service, error) {
 func getHTTPClient(context context.Context, oauth2Configuration *oauth2.Config) *http.Client {
 
 	cacheFile, cacheFileError := createTokenCacheFile()
-	HandleError(cacheFileError, fmt.Sprintf("Unable to get path to cached credential file. %v", cacheFileError))
+	errors.HandleError(cacheFileError, fmt.Sprintf("Unable to get path to cached credential file. %v", cacheFileError))
 	token, tokenError := getTokenFromFile(cacheFile)
 	if tokenError != nil {
 		token = getTokenFromWeb(oauth2Configuration)
@@ -110,7 +113,7 @@ func getTokenFromFile(filePath string) (*oauth2.Token, error) {
 // It returns the retrieved Token.
 func getTokenFromWeb(oauth2Configuration *oauth2.Config) *oauth2.Token {
 	authURL := oauth2Configuration.AuthCodeURL("state-token", oauth2.AccessTypeOffline)
-	Printfln("Go to the following link in your browser then type the "+
+	logs.Printfln("Go to the following link in your browser then type the "+
 		"authorization code: \n%v\n", authURL)
 
 	var code string
@@ -119,15 +122,15 @@ func getTokenFromWeb(oauth2Configuration *oauth2.Config) *oauth2.Token {
 	}
 
 	token, tokenError := oauth2Configuration.Exchange(oauth2.NoContext, code)
-	HandleError(tokenError, fmt.Sprintf("Unable to retrieve token from web %v", tokenError))
+	errors.HandleError(tokenError, fmt.Sprintf("Unable to retrieve token from web %v", tokenError))
 
 	return token
 }
 
 func saveToken(file string, token *oauth2.Token) {
-	Printfln("Saving credential file to: %s\n", file)
+	logs.Printfln("Saving credential file to: %s\n", file)
 	openedFile, err := os.OpenFile(file, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
-	HandleError(err, fmt.Sprintf("Unable to cache oauth token: %v", err))
+	errors.HandleError(err, fmt.Sprintf("Unable to cache oauth token: %v", err))
 	defer openedFile.Close()
 	json.NewEncoder(openedFile).Encode(token)
 }

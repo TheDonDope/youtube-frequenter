@@ -1,12 +1,4 @@
-package api
-
-import (
-	"io"
-	"log"
-	"os"
-
-	"github.com/jessevdk/go-flags"
-)
+package configs
 
 // Opts are the program options, configurable by command line argument
 var Opts struct {
@@ -27,47 +19,4 @@ var Opts struct {
 	GlobalTimeout string `short:"t" long:"global-timeout" description:"The timeout for the complete program (default: 60sec, format: 1h10m10s)" default:"60s"`
 
 	OutputDirectory string `short:"o" long:"output-directory" description:"The output directory for the log file, results.json and dump.json (default: output)" default:"output"`
-}
-
-// ParseArguments parses the program arguments
-func ParseArguments(args []string) {
-	_, argsError := flags.ParseArgs(&Opts, args)
-	if argsError != nil {
-		panic(argsError)
-	}
-}
-
-// ConfigureLogging configures the logging
-func ConfigureLogging() *os.File {
-	logFileName := GetCustomName() + ".log"
-	logFile, logFileError := os.OpenFile(GetOutputDirectory()+"/"+logFileName, os.O_WRONLY|os.O_CREATE, 0644)
-	HandleError(logFileError, "LogFileError!")
-
-	//set output of logs to f
-	log.SetOutput(io.MultiWriter(os.Stdout, logFile))
-	//defer to close when you're done with it, not because you think it's idiomatic!
-	return logFile
-}
-
-// ConfigureOutput creates the necessary output folders
-func ConfigureOutput() {
-	os.MkdirAll(Opts.OutputDirectory+"/"+GetCustomName(), 0700)
-}
-
-// GetCustomName returns the custom file/directory name
-func GetCustomName() string {
-	result := ""
-	if Opts.ChannelID != "" {
-		result = "channel-id-" + Opts.ChannelID
-	} else if Opts.CustomURL != "" {
-		result = "custom-url-" + Opts.CustomURL
-	} else if Opts.PlaylistID != "" {
-		result = "playlist-id-" + Opts.PlaylistID
-	}
-	return result
-}
-
-// GetOutputDirectory returns the complete path to the output directory
-func GetOutputDirectory() string {
-	return Opts.OutputDirectory + "/" + GetCustomName()
 }

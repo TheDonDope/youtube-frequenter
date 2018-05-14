@@ -1,6 +1,9 @@
-package api
+package services
 
-import youtube "google.golang.org/api/youtube/v3"
+import (
+	"github.com/TheDonDope/youtube-frequenter/pkg/types"
+	youtube "google.golang.org/api/youtube/v3"
+)
 
 // Exfoliator describes methods to interact with the exfoliator api
 type Exfoliator interface {
@@ -14,23 +17,23 @@ type Exfoliator interface {
 	// - Playlists (With their PlaylistID and PlaylistName)
 	// - SubscriberCount
 	// - ViewCount
-	GetChannelOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo)
+	GetChannelOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan types.ChannelMetaInfo)
 
 	// GetVideoIDsOverview gets all videos.
-	GetVideoIDsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo)
+	GetVideoIDsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan types.ChannelMetaInfo)
 
 	// GetCommentsOverview returns the overview over the comments
-	GetCommentsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo)
+	GetCommentsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan types.ChannelMetaInfo)
 
 	// GetObviouslyRelatedChannelsOverview gets the related channels for a YouTube channel
-	GetObviouslyRelatedChannelsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan ChannelMetaInfo, lastButNotLeastChannel chan ChannelMetaInfo)
+	GetObviouslyRelatedChannelsOverview(service *youtube.Service, serviceImpl YouTuber, monoChannel chan types.ChannelMetaInfo, lastButNotLeastChannel chan types.ChannelMetaInfo)
 
 	// CreateInitialChannelMetaInfo creates the initial request context
-	CreateInitialChannelMetaInfo() ChannelMetaInfo
+	CreateInitialChannelMetaInfo() types.ChannelMetaInfo
 
 	// Exfoliate returns the result
-	Exfoliate(service *youtube.Service, serviceImpl YouTuber, channelMetaInfo ChannelMetaInfo) ChannelMetaInfo
+	Exfoliate(service *youtube.Service, serviceImpl YouTuber, channelMetaInfo types.ChannelMetaInfo) types.ChannelMetaInfo
 
 	// AnalyseChannelMetaInfo prints additional information for a given channelMetaInfo.
-	AnalyseChannelMetaInfo(channelMetaInfo *ChannelMetaInfo)
+	AnalyseChannelMetaInfo(channelMetaInfo *types.ChannelMetaInfo)
 }

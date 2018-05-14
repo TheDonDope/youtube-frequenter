@@ -1,4 +1,4 @@
-package api
+package services
 
 import youtube "google.golang.org/api/youtube/v3"
 

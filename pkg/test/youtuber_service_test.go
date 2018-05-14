@@ -1,8 +1,9 @@
-package api
+package test
 
 import (
 	"testing"
 
+	ourErrors "github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -16,6 +17,6 @@ func TestChannelsList(t *testing.T) {
 		t.Fatal(actualResponseError)
 	}
 	if actualResponse.Etag != expectedResponse.Etag {
-		t.Errorf(GetFormattedFailMessage("YouTuber#ChannelsList", "expectedResponse", "actualResponse"))
+		t.Errorf(ourErrors.GetFormattedFailMessage("YouTuber#ChannelsList", "expectedResponse", "actualResponse"))
 	}
 }

@@ -6,24 +6,27 @@ import (
 	"os"
 	"time"
 
-	"github.com/TheDonDope/youtube-frequenter/api"
+	"github.com/TheDonDope/youtube-frequenter/pkg/services"
+	"github.com/TheDonDope/youtube-frequenter/pkg/util/configs"
+	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"github.com/TheDonDope/youtube-frequenter/pkg/util/logs"
 )
 
 func main() {
-	api.ParseArguments(os.Args)
-	api.ConfigureOutput()
-	logFile := api.ConfigureLogging()
+	configs.ParseArguments(os.Args)
+	configs.ConfigureOutput()
+	logFile := configs.ConfigureLogging()
 	defer logFile.Close()
 
 	start := time.Now()
-	api.Printfln("Starting youtube-frequenter @ %v", start.Format(time.RFC3339))
+	logs.Printfln("Starting youtube-frequenter @ %v", start.Format(time.RFC3339))
 
-	serviceImpl := &api.YouTuberService{}
-	exfoliatorImpl := &api.ExfoliatorService{}
+	serviceImpl := &services.YouTuberService{}
+	exfoliatorImpl := &services.ExfoliatorService{}
 
 	youtubeService, serviceError := serviceImpl.GetService()
 	if serviceError != nil {
-		formattdErrorMessage := api.GetFormattedErrorMessage(serviceError, "Error creating YouTube client")
+		formattdErrorMessage := errors.GetFormattedErrorMessage(serviceError, "Error creating YouTube client")
 		if formattdErrorMessage != "" {
 			log.Println(formattdErrorMessage)
 		}
@@ -35,7 +38,7 @@ func main() {
 	log.Println(fmt.Sprintf("Analysing Exfoliator results (ChannelID: %v, CustomURL: %v)", results.ChannelID, results.CustomURL))
 	log.Println(fmt.Sprintf("#videos%v", len(results.ObviouslyRelatedChannelIDs)))
 	exfoliatorImpl.AnalyseChannelMetaInfo(&results)
-	api.Printfln("Program arguments: %+v", api.Opts)
-	api.Printfln("Finishing youtube-frequenter @ %v", time.Now().Format(time.RFC3339))
-	api.Printfln("Overall time spent: %v", time.Since(start))
+	logs.Printfln("Program arguments: %+v", configs.Opts)
+	logs.Printfln("Finishing youtube-frequenter @ %v", time.Now().Format(time.RFC3339))
+	logs.Printfln("Overall time spent: %v", time.Since(start))
 }
