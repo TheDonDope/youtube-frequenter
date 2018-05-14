@@ -229,3 +229,4 @@ $RECYCLE.BIN/
 # Output results
 output/
 
+.vscode/*
