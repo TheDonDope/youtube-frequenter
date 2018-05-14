@@ -232,3 +232,5 @@ results.json
 # results
 output/*
 
+# .vscode
+.vscode/
