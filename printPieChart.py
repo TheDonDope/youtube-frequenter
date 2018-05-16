@@ -2,6 +2,7 @@ import json
 import matplotlib.pyplot as plt
 import sys
 
+
 def draw_piechart(inc_list):
 
     draw_list = []
@@ -26,5 +27,5 @@ if __name__ == '__main__':
     sorted_results = []
     print(sys.argv[1])
     with open(str(sys.argv[1])) as f:
-      sorted_results = json.load(f)
+        sorted_results = json.load(f)
     draw_piechart(sorted_results)

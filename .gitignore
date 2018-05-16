@@ -230,3 +230,4 @@ $RECYCLE.BIN/
 output/
 
 .vscode/*
+cmd/youtube-frequenter/output
