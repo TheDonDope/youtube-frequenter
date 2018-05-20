@@ -23,15 +23,15 @@ func main() {
 	bad := 1.
 
 	for j := 0.; j < 100000; j++ {
-		for i := 0.; i < 10000000; i++ {
+		for i := 0.; i < 1000000; i++ {
 			// get random x,y,z
-			x := r1.Float64() * 100
-			y := r1.Float64() * 100
-			z := r1.Float64() * 100
+			x := r1.Float64()
+			y := r1.Float64()
+			z := r1.Float64()
 
 			input := []float64{x, y, z}
 			var idealOut []float64
-			if x+y+z > 150 {
+			if x+y+z > 1. {
 				idealOut = []float64{1.}
 			} else {
 				idealOut = []float64{0.}
@@ -44,12 +44,12 @@ func main() {
 		// save
 		persist.ToFile("train150.json", network)
 
-		x := r1.Float64() * 100
-		y := r1.Float64() * 100
-		z := r1.Float64() * 100
+		x := r1.Float64()
+		y := r1.Float64()
+		z := r1.Float64()
 		result := network.Calculate([]float64{x, y, z})
 
-		if x+y+z > 150 && result[0] > 0.5 {
+		if x+y+z > 1. && result[0] > 0.5 {
 			good++
 			fmt.Println(fmt.Sprintf("%.2v good", result[0]))
 		} else {
