@@ -12,3 +12,6 @@ import:
   - compute/metadata
 - package: github.com/jessevdk/go-flags
   version: ^1.4.0
+- package: github.com/NOX73/go-neural
+  subpackages:
+  - persist

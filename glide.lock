@@ -1,8 +1,8 @@
-hash: a7ec318536e840b327b81996eacbd69809aabfa83300cbf3ac9cf544800ff34b
-updated: 2018-05-10T18:46:50.035966+02:00
+hash: a19a7817fa55c622eafc8e5f5beb1d3e6689c342406652ce29625c9b071452b4
+updated: 2018-05-20T14:52:49.2996927+02:00
 imports:
 - name: cloud.google.com/go
-  version: 056a55f54a6cc77b440b31a56a5e7c3982d32811
+  version: 0fd7230b2a7505833d5f69b75cbd6c9582401479
   subpackages:
   - compute/metadata
 - name: github.com/golang/protobuf
@@ -11,6 +11,11 @@ imports:
   - proto
 - name: github.com/jessevdk/go-flags
   version: c6ca198ec95c841fdb89fc0de7496fed11ab854e
+- name: github.com/NOX73/go-neural
+  version: f327eff30de74b5b2d18236415bd35a2ee5c4e59
+  subpackages:
+  - learn
+  - persist
 - name: golang.org/x/net
   version: 1c05540f6879653db88113bc4a2b70aec4bd491f
   subpackages:
