@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math"
 	"math/rand"
-	"strconv"
 	"time"
 
 	"github.com/NOX73/go-neural/learn"
@@ -20,12 +19,12 @@ func main() {
 	r1 := rand.New(s1)
 
 	if true {
-		upTo := 100000000
-		for i := 0; i < upTo; i++ {
+		upTo := 100000000.
+		for i := 0.; i < upTo; i++ {
 			x := r1.Float64()
 			y := r1.Float64()
 			learn.Learn(network, []float64{x, y}, []float64{math.Sin(x + y)}, 0.1)
-			fmt.Println(strconv.Itoa(i) + "/" + strconv.Itoa(upTo))
+			fmt.Println(fmt.Sprintf("%v / %v (%v %%)", i, upTo, i/upTo*100))
 		}
 	}
 	persist.ToFile("train_sin_2_10_1.json", network)
