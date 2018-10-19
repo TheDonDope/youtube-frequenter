@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	flags "github.com/jessevdk/go-flags"
+	"github.com/jessevdk/go-flags"
 	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 )
 
