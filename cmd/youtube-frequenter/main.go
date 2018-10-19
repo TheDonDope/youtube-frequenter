@@ -6,10 +6,10 @@ import (
 	"os"
 	"time"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/api"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/configs"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/logs"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/api"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/configs"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/logs"
 )
 
 func main() {

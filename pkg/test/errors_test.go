@@ -4,7 +4,7 @@ import (
 	"errors"
 	"testing"
 
-	ourErrors "github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	ourErrors "gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 )
 
 func TestGetFormattedFailMessage(t *testing.T) {

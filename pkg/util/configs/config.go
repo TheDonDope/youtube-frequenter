@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 	flags "github.com/jessevdk/go-flags"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 )
 
 // ParseArguments parses the program arguments

@@ -5,8 +5,8 @@ import (
 	"os"
 	"testing"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/configs"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/configs"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 )
 
 const (

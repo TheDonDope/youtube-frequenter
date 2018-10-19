@@ -5,8 +5,8 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/types"
-	ourErrors "github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/types"
+	ourErrors "gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 )
 
 func TestNextOperationStringer(t *testing.T) {

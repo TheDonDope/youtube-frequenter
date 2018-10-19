@@ -3,7 +3,7 @@ package files
 import (
 	"os"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 )
 
 // WriteToJSON writes the given jsonBytes as a json for the given path

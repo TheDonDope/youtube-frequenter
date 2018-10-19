@@ -3,7 +3,7 @@ package test
 import (
 	"testing"
 
-	ourErrors "github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	ourErrors "gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
 	"google.golang.org/api/youtube/v3"
 )
 

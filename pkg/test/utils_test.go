@@ -6,10 +6,10 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/types"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/collections"
-	ourErrors "github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/files"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/types"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/collections"
+	ourErrors "gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/files"
 )
 
 func TestWriteToJSON(t *testing.T) {

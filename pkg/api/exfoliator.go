@@ -1,7 +1,7 @@
 package api
 
 import (
-	"github.com/TheDonDope/youtube-frequenter/pkg/types"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/types"
 	youtube "google.golang.org/api/youtube/v3"
 )
 

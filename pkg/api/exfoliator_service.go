@@ -7,12 +7,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/TheDonDope/youtube-frequenter/pkg/types"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/collections"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/configs"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/errors"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/files"
-	"github.com/TheDonDope/youtube-frequenter/pkg/util/logs"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/types"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/collections"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/configs"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/files"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/logs"
 	"google.golang.org/api/youtube/v3"
 )
 
