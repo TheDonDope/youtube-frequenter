@@ -2,6 +2,10 @@
 
 YouTube Frequenter helps you discover related channels to a given channel or playlist.
 
+## Versions
+
+### v1.0.0 (2018-10-21)
+
 ## Example input data
 
 ### `channelID`
@@ -28,16 +32,19 @@ YouTube Frequenter helps you discover related channels to a given channel or pla
 ## API Calls
 
 -`getPlaylistIdByChannelIdOrCustomUrlAndPlaylistName`
-  - Input from user: `<channelId>` or `<customUrl>` and `<playlistName>`
-  - Inputparts:
-    - `snippet` (for `title`)
-    - `contentDetails` (for `relatedPlaylists` -> `uploads` Playlist (All videos the channel has upped))
-  - Output:
-    - Id of the requested playlist
-  - Usage:
-    - Get Id of Uploads and Favourites Playlist
+
+- Input from user: `<channelId>` or `<customUrl>` and `<playlistName>`
+- Inputparts:
+  - `snippet` (for `title`)
+  - `contentDetails` (for `relatedPlaylists` -> `uploads` Playlist (All videos the channel has upped))
+- Output:
+  - Id of the requested playlist
+- Usage:
+
+  - Get Id of Uploads and Favourites Playlist
 
 - `getVideoIdsByPlaylistId`:
+
   - Input from user: `<playlistId>` and `<maxSearchResults>`
   - Inputparts:
     - `contentDetails` (for `videoId`)
