@@ -6,16 +6,17 @@ import (
 	"os"
 	"time"
 
+	commonConfigs "gitlab.com/TheDonDope/gocha/pkg/util/configs"
+	"gitlab.com/TheDonDope/gocha/pkg/util/errors"
+	"gitlab.com/TheDonDope/gocha/pkg/util/logs"
 	"gitlab.com/TheDonDope/youtube-frequenter/pkg/api"
 	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/configs"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/logs"
 )
 
 func main() {
-	configs.ParseArguments(os.Args)
-	configs.ConfigureOutput()
-	logFile := configs.ConfigureLogging()
+	commonConfigs.ParseArguments(&configs.Opts, os.Args)
+	commonConfigs.ConfigureOutput()
+	logFile := commonConfigs.ConfigureLogging()
 	defer logFile.Close()
 
 	start := time.Now()

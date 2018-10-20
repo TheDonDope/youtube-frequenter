@@ -7,12 +7,13 @@ import (
 	"strings"
 	"time"
 
+	commonTypes "gitlab.com/TheDonDope/gocha/pkg/types"
+	"gitlab.com/TheDonDope/gocha/pkg/util/collections"
+	"gitlab.com/TheDonDope/gocha/pkg/util/errors"
+	"gitlab.com/TheDonDope/gocha/pkg/util/files"
+	"gitlab.com/TheDonDope/gocha/pkg/util/logs"
 	"gitlab.com/TheDonDope/youtube-frequenter/pkg/types"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/collections"
 	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/configs"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/files"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/logs"
 	"google.golang.org/api/youtube/v3"
 )
 
@@ -288,7 +289,7 @@ func (impl ExfoliatorService) AnalyseChannelMetaInfo(channelMetaInfo *types.Chan
 	if len(relatedChannelIDToNumberOfOccurrences) == 0 {
 		log.Println("Package to analyse has no ObviouslyRelatedChannelIDs to count.")
 	} else {
-		sortedRelatedChannelIDsList := types.MapEntryList{}.RankByWordCount(relatedChannelIDToNumberOfOccurrences)
+		sortedRelatedChannelIDsList := commonTypes.MapEntryList{}.RankByWordCount(relatedChannelIDToNumberOfOccurrences)
 
 		resultJSONBytes, resultJSONBytesError := json.Marshal(sortedRelatedChannelIDsList)
 		errors.HandleError(resultJSONBytesError, "Error marshaling results")

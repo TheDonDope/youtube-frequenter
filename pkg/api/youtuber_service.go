@@ -12,9 +12,9 @@ import (
 	"os/user"
 	"path/filepath"
 
+	"gitlab.com/TheDonDope/gocha/pkg/util/errors"
+	"gitlab.com/TheDonDope/gocha/pkg/util/logs"
 	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/configs"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/errors"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/logs"
 	"google.golang.org/api/youtube/v3"
 
 	"golang.org/x/oauth2"
