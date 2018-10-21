@@ -1,4 +1,4 @@
-package types
+package youtube
 
 // Video is the struct for information on videos
 type Video struct {

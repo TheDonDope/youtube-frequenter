@@ -2,10 +2,6 @@
 
 YouTube Frequenter helps you discover related channels to a given channel or playlist.
 
-## Versions
-
-### v1.0.0 (2018-10-21)
-
 ## Example input data
 
 ### `channelID`

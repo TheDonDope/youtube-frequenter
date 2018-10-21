@@ -1,4 +1,4 @@
-package configs
+package config
 
 // Opts are the program options, configurable by command line argument
 var Opts struct {
@@ -19,4 +19,22 @@ var Opts struct {
 	GlobalTimeout string `short:"t" long:"global-timeout" description:"The timeout for the complete program (default: 60sec, format: 1h10m10s)" default:"60s"`
 
 	OutputDirectory string `short:"o" long:"output-directory" description:"The output directory for the log file, results.json and dump.json (default: output)" default:"output"`
+}
+
+// GetOutName returns the custom file/directory name
+func GetOutName() string {
+	result := ""
+	if Opts.ChannelID != "" {
+		result = "channel-id-" + Opts.ChannelID
+	} else if Opts.CustomURL != "" {
+		result = "custom-url-" + Opts.CustomURL
+	} else if Opts.PlaylistID != "" {
+		result = "playlist-id-" + Opts.PlaylistID
+	}
+	return result
+}
+
+// GetOutPath returns the complete path to the output directory
+func GetOutPath() string {
+	return Opts.OutputDirectory + "/" + GetOutName()
 }

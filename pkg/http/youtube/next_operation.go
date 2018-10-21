@@ -1,4 +1,4 @@
-package types
+package youtube
 
 // NextOperation declares an enum type for operation names
 type NextOperation int

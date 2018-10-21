@@ -6,40 +6,37 @@ import (
 	"os"
 	"time"
 
-	commonConfigs "gitlab.com/TheDonDope/gocha/pkg/util/configs"
-	"gitlab.com/TheDonDope/gocha/pkg/util/errors"
-	"gitlab.com/TheDonDope/gocha/pkg/util/logs"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/api"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/util/configs"
+	cli "gitlab.com/TheDonDope/gocha/v3/pkg/config"
+	"gitlab.com/TheDonDope/gocha/v3/pkg/errors"
+	"gitlab.com/TheDonDope/gocha/v3/pkg/logging"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/config"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/exfoliating"
+	"gitlab.com/TheDonDope/youtube-frequenter/pkg/http/youtube"
 )
 
 func main() {
-	commonConfigs.ParseArguments(&configs.Opts, os.Args)
-	commonConfigs.ConfigureOutput()
-	logFile := commonConfigs.ConfigureLogging()
-	defer logFile.Close()
+	cli.ParseArgs(&config.Opts, os.Args)
+	os.MkdirAll(config.GetOutPath(), 0700)
+	f := cli.NewLogFile(config.GetOutPath() + "/" + config.GetOutName() + ".log")
+	defer f.Close()
 
 	start := time.Now()
-	logs.Printfln("Starting youtube-frequenter @ %v", start.Format(time.RFC3339))
+	logging.Printfln("Starting youtube-frequenter @ %v", start.Format(time.RFC3339))
 
-	serviceImpl := &api.YouTuberService{}
-	exfoliatorImpl := &api.ExfoliatorService{}
+	ytV3, err := youtube.NewYouTubeV3()
+	errors.Print(err, "Error creating YouTubeV3 Service")
 
-	youtubeService, serviceError := serviceImpl.GetService()
-	if serviceError != nil {
-		formattdErrorMessage := errors.GetFormattedErrorMessage(serviceError, "Error creating YouTube client")
-		if formattdErrorMessage != "" {
-			log.Println(formattdErrorMessage)
-		}
-	}
-	channelMetaInfo := exfoliatorImpl.CreateInitialChannelMetaInfo()
+	yt := youtube.NewService(ytV3)
+	xf := exfoliating.NewService(yt)
 
-	results := exfoliatorImpl.Exfoliate(youtubeService, serviceImpl, channelMetaInfo)
+	info := xf.CreateInitialChannelMetaInfo()
+
+	results := xf.Exfoliate(info)
 	log.Println("Exfoliator exfoliated successfully.")
 	log.Println(fmt.Sprintf("Analysing Exfoliator results (ChannelID: %v, CustomURL: %v)", results.ChannelID, results.CustomURL))
 	log.Println(fmt.Sprintf("#videos%v", len(results.ObviouslyRelatedChannelIDs)))
-	exfoliatorImpl.AnalyseChannelMetaInfo(&results)
-	logs.Printfln("Program arguments: %+v", configs.Opts)
-	logs.Printfln("Finishing youtube-frequenter @ %v", time.Now().Format(time.RFC3339))
-	logs.Printfln("Overall time spent: %v", time.Since(start))
+	xf.AnalyseChannelMetaInfo(results)
+	logging.Printfln("Program arguments: %+v", config.Opts)
+	logging.Printfln("Finishing youtube-frequenter @ %v", time.Now().Format(time.RFC3339))
+	logging.Printfln("Overall time spent: %v", time.Since(start))
 }

@@ -1,4 +1,4 @@
-package types
+package youtube
 
 // ChannelMetaInfo is the struct for information YouTube channels
 type ChannelMetaInfo struct {
