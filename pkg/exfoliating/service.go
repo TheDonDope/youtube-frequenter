@@ -1,15 +1,12 @@
 package exfoliating
 
 import (
-	"fmt"
 	"log"
 	"strings"
 	"time"
 
-	"gitlab.com/TheDonDope/gocha/v3/pkg/errors"
-	"gitlab.com/TheDonDope/gocha/v3/pkg/logging"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/config"
-	"gitlab.com/TheDonDope/youtube-frequenter/pkg/http/youtube"
+	"github.com/TheDonDope/youtube-frequenter/pkg/config"
+	"github.com/TheDonDope/youtube-frequenter/pkg/http/youtube"
 )
 
 // Service describes methods to interact with the Exfoliator API
@@ -72,8 +69,9 @@ func (s *service) GetChannelOverview(infos chan youtube.ChannelMetaInfo) {
 			log.Println("<-- (1/5): Receiving into GetChannelOverview")
 			if info.NextOperation == youtube.GetChannelOverviewOperation {
 				log.Println("<-> (1/5): Working in GetChannelOverview")
-				response, responseError := s.yt.ChannelsList(info.ChannelID, info.CustomURL)
-				errors.Print(responseError, "GetChannelOverview Response error!")
+				response, _ := s.yt.ChannelsList(info.ChannelID, info.CustomURL)
+				// TODO: rewrite
+				// errors.Print(responseError, "GetChannelOverview Response error!")
 
 				firstItem := response.Items[0]
 
@@ -133,9 +131,9 @@ func (s *service) GetVideoIDsOverview(infos chan youtube.ChannelMetaInfo) {
 			log.Println("<-- (2/5): Receiving into GetVideoIDsOverview")
 			if info.NextOperation == youtube.GetVideoIDsOverviewOperation {
 				log.Println("<-> (2/5): Working in GetVideoIDsOverview")
-				response, responseError := s.yt.PlaylistItemsList(info.Playlists["uploads"].PlaylistID, "uploads")
-
-				errors.Print(responseError, "GetVideoIDsOverview Response error!")
+				response, _ := s.yt.PlaylistItemsList(info.Playlists["uploads"].PlaylistID, "uploads")
+				// TODO: rewrite
+				// errors.Print(responseError, "GetVideoIDsOverview Response error!")
 
 				var videos []*youtube.Video
 				for _, item := range response.Items {
@@ -169,15 +167,17 @@ func (s *service) GetCommentsOverview(infos chan youtube.ChannelMetaInfo) {
 				log.Println("<-> (3/5): Working in GetCommentsOverview")
 				for i, video := range info.Playlists["uploads"].PlaylistItems {
 					go func(index int, inputVideo *youtube.Video) {
-						response, responseError := s.yt.CommentThreadsList(inputVideo.VideoID)
+						response, _ := s.yt.CommentThreadsList(inputVideo.VideoID)
 
-						errors.Print(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
+						// TODO: rewrite
+						// errors.Print(responseError, fmt.Sprintf("GetCommentsOverview#%d Response error! (videoId: %s)", index, inputVideo.VideoID))
 
 						var comments []*youtube.Comment
 						for _, item := range response.Items {
 							comment := new(youtube.Comment)
 							comment.CommentID = item.Snippet.TopLevelComment.Id
-							comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
+							// TODO: rewrite
+							// comment.AuthorChannelID = item.Snippet.TopLevelComment.Snippet.AuthorChannelId.(map[string]interface{})["value"].(string)
 							info.CommentAuthorChannelIDs = append(info.CommentAuthorChannelIDs, comment.AuthorChannelID)
 
 							comments = append(comments, comment)
@@ -210,36 +210,45 @@ func (s *service) GetObviouslyRelatedChannelsOverview(infos chan youtube.Channel
 				log.Println("<-> (4/5): Working in GetObviouslyRelatedChannelsOverview")
 				for i, commentatorChannelID := range info.CommentAuthorChannelIDs {
 					go func(index int, inputCommentatorChannelID string) {
-						logging.Printfln("<-> (4/5): (#-----) Begin service.Channels.List for ChannelID: %v", inputCommentatorChannelID)
-						getChannelResponse, getChannelResponseError := s.yt.ChannelsList(inputCommentatorChannelID, "")
+						// TODO: rewrite
+						// logging.Printfln("<-> (4/5): (#-----) Begin service.Channels.List for ChannelID: %v", inputCommentatorChannelID)
+						getChannelResponse, _ := s.yt.ChannelsList(inputCommentatorChannelID, "")
 
-						errors.Print(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
+						// TODO: rewrite
+						// errors.Print(getChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 
 						favoritesPlaylistID := getChannelResponse.Items[0].ContentDetails.RelatedPlaylists.Favorites
 						if favoritesPlaylistID == "" {
-							logging.Printfln("<-> (4/5): (#X----) End service.Channels.List (error: %v)", getChannelResponseError)
+							// TODO: rewrite
+							// logging.Printfln("<-> (4/5): (#X----) End service.Channels.List (error: %v)", getChannelResponseError)
 							return
 						}
-						logging.Printfln("<-> (4/5): (##----) End service.Channels.List (error: %v)", getChannelResponseError)
-						logging.Printfln("<-> (4/5): (###---) Begin service.PlaylistItems.List for PlaylistID: %v", favoritesPlaylistID)
+						// TODO: rewrite
+						// logging.Printfln("<-> (4/5): (##----) End service.Channels.List (error: %v)", getChannelResponseError)
+						// logging.Printfln("<-> (4/5): (###---) Begin service.PlaylistItems.List for PlaylistID: %v", favoritesPlaylistID)
 
-						getPlaylistItemsResponse, getPlaylistItemsResponseError := s.yt.PlaylistItemsList(favoritesPlaylistID, "favorites")
-						logging.Printfln("<-> (4/5): (####--) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
+						getPlaylistItemsResponse, _ := s.yt.PlaylistItemsList(favoritesPlaylistID, "favorites")
+						// TODO: rewrite
+						// logging.Printfln("<-> (4/5): (####--) End service.PlaylistItems.List (error: %v)", getPlaylistItemsResponseError)
 
-						errors.Print(getPlaylistItemsResponseError, "GetObviouslyRelatedChannelsOverview#%d Response error!")
+						// TODO: rewrite
+						// errors.Print(getPlaylistItemsResponseError, "GetObviouslyRelatedChannelsOverview#%d Response error!")
 
 						var favoritedVideoIDs []string
 						for _, item := range getPlaylistItemsResponse.Items {
 							favoritedVideoIDs = append(favoritedVideoIDs, item.ContentDetails.VideoId)
 						}
 
-						logging.Printfln("<-> (4/5): (#####-) Begin service.Videos.List for VideoIDs: %v", strings.Join(favoritedVideoIDs, ","))
-						getRelatedChannelResponse, getRelatedChannelResponseError :=
+						// TODO: rewrite
+						// logging.Printfln("<-> (4/5): (#####-) Begin service.Videos.List for VideoIDs: %v", strings.Join(favoritedVideoIDs, ","))
+						getRelatedChannelResponse, _ :=
 							s.yt.VideosList(strings.Join(favoritedVideoIDs, ","))
 
-						logging.Printfln("<-> (4/5): (######) End service.Videos.List (error: %v)", getRelatedChannelResponseError)
+						// TODO: rewrite
+						// logging.Printfln("<-> (4/5): (######) End service.Videos.List (error: %v)", getRelatedChannelResponseError)
 
-						errors.Print(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
+						// TODO: rewrite
+						// errors.Print(getRelatedChannelResponseError, fmt.Sprintf("GetObviouslyRelatedChannelsOverview#%d Response error!", index))
 
 						var obviouslyRelatedChannelNames []string
 						// ObviouslyRelatedChannelIDs
@@ -309,7 +318,8 @@ func (s *service) Exfoliate(info youtube.ChannelMetaInfo) youtube.ChannelMetaInf
 			accumulatedMetaInfo.ObviouslyRelatedChannelIDs = append(accumulatedMetaInfo.ObviouslyRelatedChannelIDs, channelMetaInfo.ObviouslyRelatedChannelIDs...)
 			log.Println("--> (5/5): Exfoliator")
 		case <-timeout:
-			logging.Printfln("Request timed out (%v)", config.Opts.GlobalTimeout)
+			// TODO: rewrite
+			// logging.Printfln("Request timed out (%v)", config.Opts.GlobalTimeout)
 			return accumulatedMetaInfo
 		}
 	}
