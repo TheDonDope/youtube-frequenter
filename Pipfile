@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [dev-packages]
-"flake8" = "==7.1.2" 
+"flake8" = "==7.2.0" 
 
 [packages]
 matplotlib = ">=3.8,<4.0"
