@@ -4,7 +4,7 @@ go 1.24.2
 
 require (
 	golang.org/x/oauth2 v0.30.0
-	google.golang.org/api v0.240.0
+	google.golang.org/api v0.241.0
 )
 
 require (
