@@ -7,7 +7,7 @@ name = "pypi"
 "flake8" = "==7.3.0" 
 
 [packages]
-matplotlib = ">=3.8,<4.0"
+matplotlib = ">=3.10.9,<4.0"
 
 [requires]
 python_version = "3.13"
