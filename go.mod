@@ -1,6 +1,6 @@
 module github.com/TheDonDope/youtube-frequenter
 
-go 1.24.2
+go 1.26.3
 
 require (
 	golang.org/x/oauth2 v0.34.0
